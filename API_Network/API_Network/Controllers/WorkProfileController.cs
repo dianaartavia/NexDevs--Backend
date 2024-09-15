@@ -100,7 +100,7 @@ namespace API_Network.Controllers
         }//end Editar
 
         //[Authorize]
-        [HttpDelete("EliminarProfile")]
+        [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
         {
             string msj = "No se ha podido eliminar el perfil";
@@ -111,6 +111,18 @@ namespace API_Network.Controllers
 
                 if (data != null)
                 {
+                    var listWorkSkills = await _context.WorkSkills.ToListAsync();
+
+                    //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
+                    foreach (var ws in listWorkSkills)
+                    {
+                        if(ws.WorkId == data.WorkId)
+                        {
+                            _context.WorkSkills.Remove(ws);
+                            _context.SaveChanges();
+                        }
+                    }//end foreach
+
                     _context.WorkProfiles.Remove(data);
                     _context.SaveChanges();
                     msj = $"El perfil de {data.Name}, ha sido eliminado correctamente";
