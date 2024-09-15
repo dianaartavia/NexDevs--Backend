@@ -29,7 +29,7 @@ builder.Services.AddAuthentication(
     {
         config.RequireHttpsMetadata = false;
         config.SaveToken = true;
-        config.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        config.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
@@ -55,6 +55,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

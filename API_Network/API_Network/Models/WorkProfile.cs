@@ -26,6 +26,8 @@ namespace API_Network.Models
         public int CategoryId { get; set; }
 
         public char ProfileType { get; set; }
+       
+        public string Salt { get; set; }
 
 
     }
