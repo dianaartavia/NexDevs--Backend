@@ -1,33 +1,30 @@
 ﻿using API_Network.Context;
 using API_Network.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_Network.Controllers
 {
     [ApiController]
     [Route("[Controller]")]
-    public class SkillsController : Controller
+    public class WorkCategories : Controller
     {
         private readonly DbContextNetwork _context;
 
-        public SkillsController(DbContextNetwork sContext)
+        public WorkCategories(DbContextNetwork wcContext)
         {
-            _context = sContext;
+            _context = wcContext;
         }
 
         //[Authorize]
         [HttpGet("Listado")]
-        public async Task<List<Skill>> Listado()
+        public async Task<List<WorkCategorie>> Listado()
         {
-            var list = await _context.Skills.ToListAsync();
+            var list = await _context.WorkCategories.ToListAsync();
 
             if (list == null)
             {
-                return new List<Skill>();
+                return new List<WorkCategorie>();
             }
             else
             {
@@ -37,29 +34,29 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpGet("Consultar")]
-        public async Task<Skill> Consultar(int skillId)
+        public async Task<WorkCategorie> Consultar(int categoryId)
         {
-            var temp = await _context.Skills.FirstOrDefaultAsync(s=>s.Id == skillId);
+            var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.CategoryId == categoryId);
 
             return temp;
-        }//end Consultar
+        }//end consultar 
 
         //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(Skill skill)
+        public string Agregar(WorkCategorie category)
         {
             string msj = "";
 
-            //verifica si ya hay una Skill con los mismos datos
-            bool skillExist = _context.Skills.Any(s => s.Id == skill.Id);
+            //verifica si ya hay un WorkCategorie con los mismos datos
+            bool workCategorie = _context.WorkCategories.Any(wc => wc.CategoryId == category.CategoryId);
 
             try
             {
-                if (!skillExist)
+                if (!workCategorie)
                 {
-                    _context.Skills.Add(skill);
+                    _context.WorkCategories.Add(category);
                     _context.SaveChanges();
-                    msj = "Skill registrada correctamente";
+                    msj = "Categoria registrada correctamente";
                 }
                 else
                 {
@@ -76,20 +73,20 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(Skill skill)
+        public string Editar(WorkCategorie category)
         {
             string msj = "";
 
-            //verifica si ya hay una Skill con los mismos datos
-            bool skillExist = _context.Skills.Any(s => s.SkillName == skill.SkillName);
+            //verifica si ya hay una category con los mismos datos
+            bool categoryExist = _context.WorkCategories.Any(wc => wc.CategoryName == category.CategoryName);
 
             try
             {
-                if (!skillExist)
+                if (!categoryExist)
                 {
-                    _context.Skills.Update(skill);
+                    _context.WorkCategories.Update(category);
                     _context.SaveChanges();
-                    msj = "Skill editada correctamente";
+                    msj = "Categoria editada correctamente";
                 }
                 else
                 {
@@ -106,29 +103,30 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpDelete("Eliminar")]
-        public async Task<string> Eliminar(int id)
+        public async Task<string> Eliminar(int categoryId)
         {
             string msj = "";
 
             try
             {
-                var data = await _context.Skills.FirstOrDefaultAsync(s => s.Id == id);
+                var data = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.CategoryId == categoryId);
 
-                var listWorkSkills = await _context.WorkSkills.ToListAsync();
+                //se busca en la tabla workProfile si hay alguno con esta categoria
+                var listWorkProfile = await _context.WorkProfiles.Where(wp => wp.CategoryId == categoryId).ToListAsync();
 
-                //se busca si en la tabla workSkill todos los datos relacionados a la skill y se eliminan
-                foreach (var ws in listWorkSkills)
+
+                //Se cambian los workProfile por la categoria con id 14 = Sin categoria
+                foreach (var wp in listWorkProfile)
                 {
-                    if (ws.SkillId == data.Id)
-                    {
-                        _context.WorkSkills.Remove(ws);
-                        _context.SaveChanges();
-                    }
+                    wp.CategoryId = 14;
+                    _context.WorkProfiles.Update(wp);
+                    _context.SaveChanges();
+
                 }//end foreach
 
-                _context.Skills.Remove(data);
+                _context.WorkCategories.Remove(data);
                 _context.SaveChanges();
-                msj = $"La skill: {data.SkillName}, ha sido eliminada correctamente";
+                msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
             }
             catch (Exception ex)
             {
