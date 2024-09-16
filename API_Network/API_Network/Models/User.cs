@@ -25,5 +25,7 @@ namespace API_Network.Models
         public string ProfilePictureUrl { get; set; }
 
         public char ProfileType { get; set; }
+
+        public string Salt { get; set; }
     }
 }
