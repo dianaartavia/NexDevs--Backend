@@ -42,6 +42,30 @@ namespace API_Network.Controllers
             return temp;
         }//end consultar por workId
 
+
+        //Agregue esta para que en una sola consulta tambien retorne los nombres de las skills y no solo sus ids. - Luis
+        //[Authorize]
+        [HttpGet("ConsultarID")]
+        public async Task<ActionResult<List<WorkSkillDto>>> ConsultarID(int workId)
+        {
+            var temp = await _context.WorkSkills
+                .Where(ws => ws.WorkId == workId)
+                .Include(ws => ws.Skill)
+                .Select(ws => new WorkSkillDto
+                {
+                    WorkId = ws.WorkId,
+                    SkillId = ws.SkillId,
+                    SkillName = ws.Skill.SkillName
+                })
+                .ToListAsync();
+
+            if (temp == null || !temp.Any())
+            {
+                return NotFound();
+            }
+            return Ok(temp);
+        }//end
+
         //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkSkill workSkill)
@@ -143,3 +167,11 @@ namespace API_Network.Controllers
 
     }//end class
 }//end namespace
+
+//Un modelo para el consultar con el skillname incluido
+public class WorkSkillDto
+{
+    public int WorkId { get; set; }
+    public int SkillId { get; set; }
+    public string SkillName { get; set; }
+}
