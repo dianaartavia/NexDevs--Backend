@@ -87,28 +87,6 @@ namespace API_Network.Controllers
         {
             var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == id);
             return temp;
-            // var workProfile = await _context.WorkProfiles
-            //        .Where(wp => wp.WorkId == id)
-            //        .Select(wp => new WorkProfile
-            //        {
-            //            WorkId = wp.WorkId,
-            //            Name = wp.Name,
-            //            Email = wp.Email,       
-            //            Number = wp.Number,
-            //            Province = wp.Province,
-            //            City = wp.City,
-            //            WorkDescription = wp.WorkDescription,
-            //            ProfilePictureUrl = wp.ProfilePictureUrl,
-            //            CategoryId = wp.CategoryId,
-            //        })
-            //        .FirstOrDefaultAsync();
-
-            // if (workProfile == null)
-            // {
-            //     return NotFound();
-            // }
-
-            // return Ok(workProfile);
         }//end Consultar
 
         //[Authorize]
