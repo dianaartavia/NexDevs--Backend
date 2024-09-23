@@ -85,28 +85,30 @@ namespace API_Network.Controllers
         [HttpGet("BuscarID")]
         public async Task<ActionResult<WorkProfile>> ConsultarID(int id)
         {
-            var workProfile = await _context.WorkProfiles
-                   .Where(wp => wp.WorkId == id)
-                   .Select(wp => new WorkProfile
-                   {
-                       WorkId = wp.WorkId,
-                       Name = wp.Name,
-                       Email = wp.Email,       
-                       Number = wp.Number,
-                       Province = wp.Province,
-                       City = wp.City,
-                       WorkDescription = wp.WorkDescription,
-                       ProfilePictureUrl = wp.ProfilePictureUrl,
-                       CategoryId = wp.CategoryId,
-                   })
-                   .FirstOrDefaultAsync();
+            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == id);
+            return temp;
+            // var workProfile = await _context.WorkProfiles
+            //        .Where(wp => wp.WorkId == id)
+            //        .Select(wp => new WorkProfile
+            //        {
+            //            WorkId = wp.WorkId,
+            //            Name = wp.Name,
+            //            Email = wp.Email,       
+            //            Number = wp.Number,
+            //            Province = wp.Province,
+            //            City = wp.City,
+            //            WorkDescription = wp.WorkDescription,
+            //            ProfilePictureUrl = wp.ProfilePictureUrl,
+            //            CategoryId = wp.CategoryId,
+            //        })
+            //        .FirstOrDefaultAsync();
 
-            if (workProfile == null)
-            {
-                return NotFound();
-            }
+            // if (workProfile == null)
+            // {
+            //     return NotFound();
+            // }
 
-            return Ok(workProfile);
+            // return Ok(workProfile);
         }//end Consultar
 
         //[Authorize]
