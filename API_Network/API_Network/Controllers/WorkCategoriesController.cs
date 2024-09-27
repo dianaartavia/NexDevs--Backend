@@ -7,11 +7,11 @@ namespace API_Network.Controllers
 {
     [ApiController]
     [Route("[Controller]")]
-    public class WorkCategories : Controller
+    public class WorkCategoriesController : Controller
     {
         private readonly DbContextNetwork _context;
 
-        public WorkCategories(DbContextNetwork wcContext)
+        public WorkCategoriesController(DbContextNetwork wcContext)
         {
             _context = wcContext;
         }
