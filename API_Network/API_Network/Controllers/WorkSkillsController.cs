@@ -35,35 +35,30 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpGet("Consultar")]
-        public async Task<List<WorkSkill>> Consultar(int workId)
+        public async Task<ActionResult<List<WorkSkillDto>>> Consultar(int workId)
         {
-            var temp = await _context.WorkSkills.Where(ws => ws.WorkId == workId).ToListAsync();
+            //Obtenet las skills asociadas al workId
+            var workSkills = await _context.WorkSkills
+                                            .Where(ws => ws.WorkId == workId)
+                                            .ToListAsync();
 
-            return temp;
-        }//end consultar por workId
+            //se inicializa variable que va a tener los ids y nombre de la skill
+            var workSkillDtos = new List<WorkSkillDto>();
 
+            //se recorre la variable workSkill y para llenar la lista de workSkillDtos
+            foreach(var ws in workSkills)
+            {
+                var skillName = await _context.Skills.FirstOrDefaultAsync(s => s.Id == ws.SkillId);
 
-        //Agregue esta para que en una sola consulta tambien retorne los nombres de las skills y no solo sus ids. - Luis
-        //[Authorize]
-        [HttpGet("ConsultarID")]
-        public async Task<ActionResult<List<WorkSkillDto>>> ConsultarID(int workId)
-        {
-            var temp = await _context.WorkSkills
-                .Where(ws => ws.WorkId == workId)
-                .Include(ws => ws.Skill)
-                .Select(ws => new WorkSkillDto
+                workSkillDtos.Add(new WorkSkillDto
                 {
                     WorkId = ws.WorkId,
                     SkillId = ws.SkillId,
-                    SkillName = ws.Skill.SkillName
-                })
-                .ToListAsync();
-
-            if (temp == null || !temp.Any())
-            {
-                return NotFound();
+                    SkillName = skillName.SkillName
+                });
             }
-            return Ok(temp);
+            
+            return Ok(workSkillDtos);
         }//end
 
         //[Authorize]
@@ -104,7 +99,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(WorkSkill workSkill) 
+        public string Editar(WorkSkill workSkill)
         {
             string msj = "";
 
@@ -140,7 +135,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpDelete("Eliminar")]
-        public async Task<string>Eliminar(int id)
+        public async Task<string> Eliminar(int id)
         {
             string msj = "";
 
@@ -158,7 +153,7 @@ namespace API_Network.Controllers
                     msj = $"WorkSkill con el ID {temp.WorkSkillId}, eliminado correctamente";
                 }//end else
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
