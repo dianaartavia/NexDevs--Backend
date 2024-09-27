@@ -111,23 +111,22 @@ namespace API_Network.Controllers
             {
                 var data = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
 
-                //Hacer este procedimiento comentado pero con la nueva tabla WorkCategories
-                // //se busca en la tabla workProfile si hay alguno con esta categoria
-                // var listWorkProfile = await _context.WorkProfiles.Where(wp => wp.CategoryId == categoryId).ToListAsync();
+                if (data != null)
+                {
+                    //se busca en la tabla WorkCategories si hay alguno con esta categoria
+                    var listWorkCategories = await _context.WorkCategories.Where(wc => wc.CategoryId == categoryId).ToListAsync();
 
+                    //Se eliminan todos los que tienen el mismo CategoryId
+                    foreach (var wc in listWorkCategories)
+                    {
+                        _context.WorkCategories.Remove(wc);
+                        _context.SaveChanges();
 
-                // //Se cambian los workProfile por la categoria con id 14 = Sin categoria
-                // foreach (var wp in listWorkProfile)
-                // {
-                //     wp.CategoryId = 14;
-                //     _context.WorkProfiles.Update(wp);
-                //     _context.SaveChanges();
-
-                // }//end foreach
-
-                _context.Categories.Remove(data);
-                _context.SaveChanges();
-                msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
+                    }//end foreach
+                    _context.Categories.Remove(data);
+                    _context.SaveChanges();
+                    msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
+                }
             }
             catch (Exception ex)
             {
