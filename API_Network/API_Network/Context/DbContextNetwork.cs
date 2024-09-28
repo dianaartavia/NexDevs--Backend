@@ -15,9 +15,10 @@ namespace API_Network.Context
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<WorkCategorie> WorkCategories { get; set; }
+        public DbSet<Category> Categories { get; set; }
         public DbSet<WorkProfile> WorkProfiles { get; set; }
         public DbSet<WorkSkill> WorkSkills { get; set; }
+        public DbSet<WorkCategory> WorkCategories { get; set; }
 
     }
 

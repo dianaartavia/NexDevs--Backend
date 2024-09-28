@@ -2,7 +2,7 @@
 
 namespace API_Network.Models
 {
-    public class WorkCategorie
+    public class Category
     {
         [Key]
         public int CategoryId { get; set; }

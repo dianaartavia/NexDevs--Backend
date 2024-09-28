@@ -7,24 +7,24 @@ namespace API_Network.Controllers
 {
     [ApiController]
     [Route("[Controller]")]
-    public class WorkCategories : Controller
+    public class CategoriesController : Controller
     {
         private readonly DbContextNetwork _context;
 
-        public WorkCategories(DbContextNetwork wcContext)
+        public CategoriesController(DbContextNetwork wcContext)
         {
             _context = wcContext;
         }
 
         //[Authorize]
         [HttpGet("Listado")]
-        public async Task<List<WorkCategorie>> Listado()
+        public async Task<List<Category>> Listado()
         {
-            var list = await _context.WorkCategories.ToListAsync();
+            var list = await _context.Categories.ToListAsync();
 
             if (list == null)
             {
-                return new List<WorkCategorie>();
+                return new List<Category>();
             }
             else
             {
@@ -34,27 +34,27 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpGet("Consultar")]
-        public async Task<WorkCategorie> Consultar(int categoryId)
+        public async Task<Category> Consultar(int categoryId)
         {
-            var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.CategoryId == categoryId);
+            var temp = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
 
             return temp;
         }//end consultar 
 
         //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(WorkCategorie category)
+        public string Agregar(Category category)
         {
             string msj = "";
 
-            //verifica si ya hay un WorkCategorie con los mismos datos
-            bool workCategorie = _context.WorkCategories.Any(wc => wc.CategoryId == category.CategoryId);
+            //verifica si ya hay un Categorie con los mismos datos
+            bool categorie = _context.Categories.Any(c => c.CategoryId == category.CategoryId);
 
             try
             {
-                if (!workCategorie)
+                if (!categorie)
                 {
-                    _context.WorkCategories.Add(category);
+                    _context.Categories.Add(category);
                     _context.SaveChanges();
                     msj = "Categoria registrada correctamente";
                 }
@@ -73,18 +73,18 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(WorkCategorie category)
+        public string Editar(Category category)
         {
             string msj = "";
 
             //verifica si ya hay una category con los mismos datos
-            bool categoryExist = _context.WorkCategories.Any(wc => wc.CategoryName == category.CategoryName);
+            bool categoryExist = _context.Categories.Any(c => c.CategoryName == category.CategoryName);
 
             try
             {
                 if (!categoryExist)
                 {
-                    _context.WorkCategories.Update(category);
+                    _context.Categories.Update(category);
                     _context.SaveChanges();
                     msj = "Categoria editada correctamente";
                 }
@@ -109,24 +109,24 @@ namespace API_Network.Controllers
 
             try
             {
-                var data = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.CategoryId == categoryId);
+                var data = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
 
-                //se busca en la tabla workProfile si hay alguno con esta categoria
-                var listWorkProfile = await _context.WorkProfiles.Where(wp => wp.CategoryId == categoryId).ToListAsync();
-
-
-                //Se cambian los workProfile por la categoria con id 14 = Sin categoria
-                foreach (var wp in listWorkProfile)
+                if (data != null)
                 {
-                    wp.CategoryId = 14;
-                    _context.WorkProfiles.Update(wp);
+                    //se busca en la tabla WorkCategories si hay alguno con esta categoria
+                    var listWorkCategories = await _context.WorkCategories.Where(wc => wc.CategoryId == categoryId).ToListAsync();
+
+                    //Se eliminan todos los que tienen el mismo CategoryId
+                    foreach (var wc in listWorkCategories)
+                    {
+                        _context.WorkCategories.Remove(wc);
+                        _context.SaveChanges();
+
+                    }//end foreach
+                    _context.Categories.Remove(data);
                     _context.SaveChanges();
-
-                }//end foreach
-
-                _context.WorkCategories.Remove(data);
-                _context.SaveChanges();
-                msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
+                    msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
+                }
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using API_Network.Context;
+using API_Network.Context;
 using API_Network.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
