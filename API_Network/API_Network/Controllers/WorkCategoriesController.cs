@@ -96,68 +96,68 @@ namespace API_Network.Controllers
             return msj;
         }//end Agregar
 
-        // //[Authorize]
-        // [HttpPut("Editar")]
-        // public string Editar(WorkSkill workSkill) 
-        // {
-        //     string msj = "";
+        //[Authorize]
+        [HttpPut("Editar")]
+        public string Editar(WorkCategory workCategory) 
+        {
+            string msj = "";
 
-        //     //verifica si ya hay un WorkSkill con los mismos datos
-        //     bool workSkillExist = _context.WorkSkills.Any(ws => ws.WorkId == workSkill.WorkId && ws.SkillId == workSkill.SkillId);
+            //verifica si ya hay un WorkCategorie con los mismos datos
+            bool workCategoryExist = _context.WorkCategories.Any(wc => wc.WorkId == workCategory.WorkId && wc.CategoryId == workCategory.CategoryId);
 
-        //     //verifica que el workId exista
-        //     bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workSkill.WorkId);
+            //verifica que el workId exista
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId);
 
-        //     //verifica que el skillId exista
-        //     bool skillExiste = _context.Skills.Any(s => s.Id == workSkill.SkillId);
+            //verifica que la category exista
+            bool categoryExist= _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId);
 
-        //     try
-        //     {
-        //         if (!workSkillExist && workExist && skillExiste)
-        //         {
-        //             _context.WorkSkills.Update(workSkill);
-        //             _context.SaveChanges();
-        //             msj = "WorkSkill editado correctamente";
-        //         }
-        //         else
-        //         {
-        //             msj = "Esos datos ya existen o son incorrectos";
-        //         }//end else
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-        //     }//end
+            try
+            {
+                if (!workCategoryExist && workExist && categoryExist)
+                {
+                    _context.WorkCategories.Update(workCategory);
+                    _context.SaveChanges();
+                    msj = "WorkCategory editado correctamente";
+                }
+                else
+                {
+                    msj = "Esos datos ya existen o son incorrectos";
+                }//end else
+            }
+            catch (Exception ex)
+            {
+                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+            }//end
 
-        //     return msj;
-        // }//end Editar
+            return msj;
+        }//end Editar
 
-        // //[Authorize]
-        // [HttpDelete("Eliminar")]
-        // public async Task<string>Eliminar(int id)
-        // {
-        //     string msj = "";
+        //[Authorize]
+        [HttpDelete("Eliminar")]
+        public async Task<string>Eliminar(int id)
+        {
+            string msj = "";
 
-        //     try
-        //     {
-        //         var temp = await _context.WorkSkills.FirstOrDefaultAsync(ws => ws.WorkSkillId == id);
-        //         if (temp == null)
-        //         {
-        //             msj = "No existe ninguna workSkill con el ID " + id;
-        //         }
-        //         else
-        //         {
-        //             _context.WorkSkills.Remove(temp);
-        //             await _context.SaveChangesAsync();
-        //             msj = $"WorkSkill con el ID {temp.WorkSkillId}, eliminado correctamente";
-        //         }//end else
-        //     }
-        //     catch (Exception ex) 
-        //     {
-        //         msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-        //     }
-        //     return msj;
-        // }//end Eliminar
+            try
+            {
+                var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.Id == id);
+                if (temp == null)
+                {
+                    msj = $"No existe ninguna workCategory con el Id { temp.Id }";
+                }
+                else
+                {
+                    _context.WorkCategories.Remove(temp);
+                    await _context.SaveChangesAsync();
+                    msj = $"WorkCategory con el Id { temp.Id }, eliminado correctamente";
+                }//end else
+            }
+            catch (Exception ex) 
+            {
+                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+            }
+            return msj;
+        }//end Eliminar
 
     }//end class
 }//end namespace
