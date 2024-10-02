@@ -76,22 +76,12 @@ namespace API_Network.Controllers
         public string Editar(Category category)
         {
             string msj = "";
-
-            //verifica si ya hay una category con los mismos datos
-            bool categoryExist = _context.Categories.Any(c => c.CategoryName == category.CategoryName);
-
             try
             {
-                if (!categoryExist)
-                {
+                
                     _context.Categories.Update(category);
                     _context.SaveChanges();
                     msj = "Categoria editada correctamente";
-                }
-                else
-                {
-                    msj = "Esos datos ya existen o son incorrectos";
-                }//end else
             }
             catch (Exception ex)
             {
