@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using API_Network.Helpers;
+using Microsoft.AspNetCore.Identity.Data;
 
 
 namespace API_Network.Controllers
@@ -212,10 +213,11 @@ namespace API_Network.Controllers
 
         // ***   MÉTODO AUTENTICACION DE LOGIN    ***
 
+        //Modificado para que sea por medio de un objeto y no con parametros escritos, asi mas facil y seguro de implementar en el front/
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => (wp.Email.Equals(email)) && (wp.Password.Equals(password)));
+            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => (wp.Email.Equals(loginRequest.Email)) && (wp.Password.Equals(loginRequest.Password)));
 
             if (temp == null)
             {
