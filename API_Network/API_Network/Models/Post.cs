@@ -1,5 +1,6 @@
 ﻿using API_Network.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API_Network.Models
 {
@@ -21,5 +22,8 @@ namespace API_Network.Models
         public int CommentsCount { get; set; }
 
         public int Approved { get; set; }
+
+        [ForeignKey("WorkId")]
+        public WorkProfile WorkProfile { get; set; }
     }
 }

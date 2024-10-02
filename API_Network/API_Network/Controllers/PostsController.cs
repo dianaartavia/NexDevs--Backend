@@ -21,7 +21,35 @@ namespace API_Network.Controllers
         [HttpGet("ListadoGeneral")]
         public async Task<List<Post>> Listado()
         {
-            var list = await _context.Posts.ToListAsync();
+            //var list = await _context.Posts.ToListAsync();
+            var list = await _context.Posts
+                .Include(p => p.WorkProfile)
+                .Select(p => new Post
+                {
+                    PostId = p.PostId,
+                    WorkId = p.WorkId,
+                    ContentPost = p.ContentPost,
+                    PostImageUrl = p.PostImageUrl,
+                    CreateAt = p.CreateAt,
+                    LikesCount = p.LikesCount,
+                    CommentsCount = p.CommentsCount,
+                    Approved = p.Approved,
+                    WorkProfile = new WorkProfile
+                    {
+                        WorkId = p.WorkProfile.WorkId,
+                        Name = p.WorkProfile.Name,
+                        Email = p.WorkProfile.Email,
+                        Number = p.WorkProfile.Number,
+                        Password = p.WorkProfile.Password,
+                        Province = p.WorkProfile.Province,
+                        City = p.WorkProfile.City,
+                        WorkDescription = p.WorkProfile.WorkDescription,
+                        ProfilePictureUrl = p.WorkProfile.ProfilePictureUrl,
+                        ProfileType = p.WorkProfile.ProfileType,
+                        Salt = p.WorkProfile.Salt
+                    }
+                })
+                .ToListAsync();
 
             if (list == null)
             {
@@ -152,7 +180,7 @@ namespace API_Network.Controllers
                 var temp = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
                 if (temp == null)
                 {
-                    msj = $"No existe ningun Post con el id: { postId }";
+                    msj = $"No existe ningun Post con el id: {postId}";
                 }
                 else
                 {
