@@ -39,10 +39,8 @@ namespace API_Network.Controllers
         }//end Listado
 
         [HttpPost("CrearCuenta")]
-        public string CrearCuenta(WorkProfile workProfile)
+        public IActionResult CrearCuenta(WorkProfile workProfile)
         {
-            string msj = "";
-
             //verifica si ya hay un WorkProfile con los mismos datos
             bool workProfileExist = _context.WorkProfiles.Any(wp => wp.Email == workProfile.Email);
 
@@ -53,19 +51,31 @@ namespace API_Network.Controllers
                     workProfile.Salt = HelperCryptography.GenerateSalt();
                     _context.WorkProfiles.Add(workProfile);
                     _context.SaveChanges();
-                    msj = "Cuenta Creada";
+                    return Ok(new
+                    {
+                        message = "Cuenta Creada",
+                        workId = workProfile.WorkId,
+                        email = workProfile.Email,
+                        password = workProfile.Password
+                    });
                 }
                 else
                 {
-                    msj = "Ya existe una cuenta con ese correo o los datos son incorrectos";
+                    return BadRequest(new
+                    {
+                        message = "Ya existe una cuenta con ese correo o los datos son incorrectos"
+                    });
                 }
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+                return StatusCode(500, new
+                {
+                    message = $"Error: {ex.Message}",
+                    innerException = ex.InnerException?.Message
+                });
             }//end
 
-            return msj;
         }//end CrearCuenta
 
         //[Authorize]
