@@ -39,8 +39,8 @@ namespace API_Network.Controllers
         {
             // Obtener las categorías asociadas al workId
             var workCategories = await _context.WorkCategories
-                                               .Where(wc => wc.WorkId == workId)
-                                               .ToListAsync();
+                                            .Where(wc => wc.WorkId == workId)
+                                            .ToListAsync();
 
             var workCategoryDtos = new List<WorkCategoryDto>();
 
@@ -52,13 +52,21 @@ namespace API_Network.Controllers
                 {
                     WorkId = wc.WorkId,
                     CategoryId = wc.CategoryId,
-                    CategoryName = categoryName.CategoryName 
+                    CategoryName = categoryName.CategoryName
                 });
             }
 
             return Ok(workCategoryDtos);
         }
 
+        //[Authorize]
+        [HttpGet("ConsultarId")]
+        public async Task<ActionResult<WorkCategory>> ConsultarPorId(int id)
+        {
+            var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.Id == id);
+
+            return temp;
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
@@ -98,7 +106,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(WorkCategory workCategory) 
+        public string Editar(WorkCategory workCategory)
         {
             string msj = "";
 
@@ -109,7 +117,7 @@ namespace API_Network.Controllers
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId);
 
             //verifica que la category exista
-            bool categoryExist= _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId);
+            bool categoryExist = _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId);
 
             try
             {
@@ -134,7 +142,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpDelete("Eliminar")]
-        public async Task<string>Eliminar(int id)
+        public async Task<string> Eliminar(int id)
         {
             string msj = "";
 
@@ -143,16 +151,16 @@ namespace API_Network.Controllers
                 var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.Id == id);
                 if (temp == null)
                 {
-                    msj = $"No existe ninguna workCategory con el Id { temp.Id }";
+                    msj = $"No existe ninguna workCategory con el Id {temp.Id}";
                 }
                 else
                 {
                     _context.WorkCategories.Remove(temp);
                     await _context.SaveChangesAsync();
-                    msj = $"WorkCategory con el Id { temp.Id }, eliminado correctamente";
+                    msj = $"WorkCategory con el Id {temp.Id}, eliminado correctamente";
                 }//end else
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
