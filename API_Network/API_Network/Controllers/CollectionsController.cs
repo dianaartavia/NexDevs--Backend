@@ -42,6 +42,14 @@ namespace API_Network.Controllers
         }//end Consultar
 
         //[Authorize]
+        [HttpGet("ConsultarId")]
+        public async Task<Collection> ConsultarCollectionId(int collectionId)
+        {
+            var temp = await _context.Collections.FirstOrDefaultAsync(c => c.CollectionId == collectionId);
+            return temp;
+        }//end Consultar
+
+        //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Collection collection)
         {
