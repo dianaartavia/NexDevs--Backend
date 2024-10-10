@@ -116,6 +116,50 @@ namespace API_Network.Controllers
             return temp;
         }//end Consultar
 
+        //Authorize]
+        [HttpPost("Like")]
+        public async Task<string> Like(int postId)
+        {
+            var msj = "";
+            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
+
+            post.LikesCount += 1;
+
+            try
+            {
+                _context.Posts.Update(post);
+                _context.SaveChanges();
+                msj = "Like registrado correctamente";
+            }
+            catch (Exception ex)
+            {
+                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+            }//end
+            return msj;
+        }//end Like
+
+        //Authorize]
+        [HttpPost("Dislike")]
+        public async Task<string> Dislike(int postId)
+        {
+            var msj = "";
+            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
+
+            post.LikesCount = post.LikesCount - 1;
+
+            try
+            {
+                _context.Posts.Update(post);
+                _context.SaveChanges();
+                msj = "Dislike registrado correctamente";
+            }
+            catch (Exception ex)
+            {
+                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+            }//end
+            return msj;
+        }//end Dislike
+
         //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Post post)
