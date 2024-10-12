@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using API_Network.Helpers;
+using Microsoft.AspNetCore.Identity.Data;
 
 
 namespace API_Network.Controllers
@@ -38,10 +39,8 @@ namespace API_Network.Controllers
         }//end Listado
 
         [HttpPost("CrearCuenta")]
-        public string CrearCuenta(User user)
+        public IActionResult CrearCuenta(User user)
         {
-            string msj = "";
-
             //verifica si ya hay un User con los mismos datos
             bool userExist = _context.Users.Any(u => u.Email == user.Email);
 
@@ -49,26 +48,33 @@ namespace API_Network.Controllers
             {
                 if (!userExist)
                 {
-                    if (user.ProfileType == null)
-                    {
-                        user.ProfileType = 'U';
-                    }
                     user.Salt = HelperCryptography.GenerateSalt();
                     _context.Users.Add(user);
                     _context.SaveChanges();
-                    msj = "Cuenta Creada";
+                    return Ok(new
+                    {
+                        message = "Cuenta Creada",
+                        userId = user.UserId,
+                        email = user.Email,
+                        password = user.Password
+                    });
                 }
                 else
                 {
-                    msj = "Ya existe una cuenta con ese correo o los datos son incorrectos";
+                    return BadRequest(new
+                    {
+                        message = "Ya existe una cuenta con ese correo o los datos son incorrectos"
+                    });
                 }
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+                return StatusCode(500, new
+                {
+                    message = $"Error: {ex.Message}",
+                    innerException = ex.InnerException?.Message
+                });
             }//end
-
-            return msj;
         }//end CrearCuenta
 
         //[Authorize]
@@ -197,9 +203,9 @@ namespace API_Network.Controllers
         // ***   MÉTODO AUTENTICACION DE LOGIN    ***
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var temp = await _context.Users.FirstOrDefaultAsync(u => (u.Email.Equals(email)) && (u.Password.Equals(password)));
+            var temp = await _context.Users.FirstOrDefaultAsync(u => (u.Email.Equals(loginRequest.Email)) && (u.Password.Equals(loginRequest.Password)));
 
             if (temp == null)
             {
