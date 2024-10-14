@@ -102,8 +102,10 @@ namespace API_Network.Controllers
         public async Task<ActionResult<List<Post>>> ConsultarWorkId(int workId)
         {
             var posts = await _context.Posts
-                                            .Where(ws => ws.WorkId == workId)
-                                            .ToListAsync();
+                             .Where(ws => ws.WorkId == workId)
+                             .Include(p => p.WorkProfile) // Incluye WorkProfile
+                             .ToListAsync();
+
             return posts;
         }//end
 
