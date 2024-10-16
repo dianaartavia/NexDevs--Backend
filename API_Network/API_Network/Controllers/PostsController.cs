@@ -133,50 +133,6 @@ namespace API_Network.Controllers
             return temp;
         }//end Consultar
 
-        //Authorize]
-        [HttpPost("Like")]
-        public async Task<string> Like(int postId)
-        {
-            var msj = "";
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-
-            post.LikesCount += 1;
-
-            try
-            {
-                _context.Posts.Update(post);
-                _context.SaveChanges();
-                msj = "Like registrado correctamente";
-            }
-            catch (Exception ex)
-            {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-            return msj;
-        }//end Like
-
-        //Authorize]
-        [HttpPost("Dislike")]
-        public async Task<string> Dislike(int postId)
-        {
-            var msj = "";
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-
-            post.LikesCount = post.LikesCount - 1;
-
-            try
-            {
-                _context.Posts.Update(post);
-                _context.SaveChanges();
-                msj = "Dislike registrado correctamente";
-            }
-            catch (Exception ex)
-            {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-            return msj;
-        }//end Dislike
-
         //[Authorize]
         [HttpPost("Agregar")]
         public async Task<ActionResult<string>> Agregar(IFormFile photo, [FromForm] Post post)
@@ -204,19 +160,19 @@ namespace API_Network.Controllers
                         await photo.CopyToAsync(stream);
                     }
 
-                    // configurar los parámetros para subir la imagen a Cloudinary
+                    // configurar los parï¿½metros para subir la imagen a Cloudinary
                     var uploadParams = new ImageUploadParams
                     {
                         File = new FileDescription(fileWithPath),
                         UseFilename = true,
                         Overwrite = true,
-                        Folder = "posts" // carpeta en Cloudinary dedicada a las imágenes de los posts
+                        Folder = "posts" // carpeta en Cloudinary dedicada a las imï¿½genes de los posts
                     };
 
                     // subir la imagen a Cloudinary
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-                    // eliminar el archivo temporal después de la subida
+                    // eliminar el archivo temporal despuï¿½s de la subida
                     System.IO.File.Delete(fileWithPath);
 
                     // guardar la URL de la imagen en el post
@@ -224,6 +180,7 @@ namespace API_Network.Controllers
                 }
 
                 post.Approved = 0;
+                post.LikesCount = 0;
                 post.CreateAt = DateTime.UtcNow;
 
                 // se guarda el post ya con la URL de la imagen
@@ -275,29 +232,41 @@ namespace API_Network.Controllers
 
             try
             {
+                //se eliminan todos los likes relacionados a este post
+                    var likes = await _context.Likes.ToListAsync();
+
+                    foreach (var like in likes)
+                    {
+                        if (like.PostId == postId)
+                        {
+                            _context.Likes.Remove(like);
+                            _context.SaveChanges();
+                        }
+                    }
+
                 // Buscar el post en la base de datos
                 var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
 
                 if (postToDelete == null)
                 {
-                    return $"No existe ningún post con el ID: {postId}";
+                    return $"No existe ningï¿½n post con el ID: {postId}";
                 }
 
                 // Extraer el public_id de la URL de la imagen
                 var publicId = GetPublicIdFromUrl(postToDelete.PostImageUrl);
-                
+
 
                 // Eliminar la imagen de Cloudinary
                 var deleteParams = new DeletionParams(publicId);
                 var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
 
-                // Verificar si la eliminación fue exitosa
+                // Verificar si la eliminaciï¿½n fue exitosa
                 if (deleteResult.StatusCode == HttpStatusCode.OK)
                 {
                     // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
                     _context.Posts.Remove(postToDelete);
                     await _context.SaveChangesAsync();
-                    msj = $"{publicId} Post con el ID {postToDelete.PostId} eliminado correctamente." ;
+                    msj = $"{publicId} Post con el ID {postToDelete.PostId} eliminado correctamente.";
                 }
                 else
                 {
@@ -322,11 +291,11 @@ namespace API_Network.Controllers
             if (segments.Length > 3)
             {
                 // Combina la carpeta y el nombre del archivo para crear el public_id completo
-                var publicId = string.Join("", segments.Skip(3)).Split('.')[0]; // Extraer el public_id sin la extensión
+                var publicId = string.Join("", segments.Skip(3)).Split('.')[0]; // Extraer el public_id sin la extensiï¿½n
                 return publicId;
             }
 
-            throw new ArgumentException("La URL de la imagen no es válida para extraer el public_id.");
+            throw new ArgumentException("La URL de la imagen no es vï¿½lida para extraer el public_id.");
         }
 
 

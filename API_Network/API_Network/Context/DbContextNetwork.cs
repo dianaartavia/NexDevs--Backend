@@ -19,6 +19,7 @@ namespace API_Network.Context
         public DbSet<WorkProfile> WorkProfiles { get; set; }
         public DbSet<WorkSkill> WorkSkills { get; set; }
         public DbSet<WorkCategory> WorkCategories { get; set; }
+        public DbSet<Like> Likes { get; set; }
 
     }
 
