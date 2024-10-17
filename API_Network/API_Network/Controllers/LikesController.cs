@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using API_Network.Context;
 using API_Network.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +36,7 @@ namespace API_Network.Controllers
                 likePost.WorkProfileId = null;
             }
 
-            // Se busca el "like" que coincida exactamente con PostId y con el UserId
+            // Se busca si hay un "like" que coincida exactamente con PostId y con el UserId
             if (likePost.UserId != null)
             {
                 likeExist = await (from like in _context.Likes
@@ -44,7 +45,7 @@ namespace API_Network.Controllers
                                    select like).FirstOrDefaultAsync();
             }
 
-            // Se busca el "like" que coincida exactamente con PostId y con el WorkProfileId
+            // Se busca si hay un "like" que coincida exactamente con PostId y con el WorkProfileId
             if (likePost.WorkProfileId != null)
             {
                 likeExist = await (from like in _context.Likes
@@ -66,18 +67,28 @@ namespace API_Network.Controllers
                         WorkProfileId = null
                     };
 
+                    //Actualizar el campo LikesCount en Post
+                    var posts = await _context.Posts.ToListAsync();
+                    var updatePost = new Post();
+
+                    foreach (var post in posts)
+                    {
+                        if (post.PostId == likePost.PostId)
+                        {
+                            updatePost = post;
+                            updatePost.LikesCount += 1;
+                            _context.Posts.Update(updatePost);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
+
                     _context.Likes.Add(like);
                     _context.SaveChanges();
 
                     msj = $"Like en el PostId: {likePost.PostId} registrado correctamente";
                 }
-                else
-                {
-                    msj = $"Ya existe un like con los mismos datos registrado";
-                }
-
-                //si es el WorkProfile el que da el like
-                if (likePost.WorkProfileId != null && likeExist == null)
+                else if (likePost.WorkProfileId != null && likeExist == null) //si es el WorkProfile el que da el like
                 {
                     var like = new Like
                     {
@@ -86,6 +97,22 @@ namespace API_Network.Controllers
                         UserId = null,
                         WorkProfileId = likePost.WorkProfileId
                     };
+
+                    //Actualizar el campo LikesCount en Post
+                    var posts = await _context.Posts.ToListAsync();
+                    var updatePost = new Post();
+
+                    foreach (var post in posts)
+                    {
+                        if (post.PostId == likePost.PostId)
+                        {
+                            updatePost = post;
+                            updatePost.LikesCount += 1;
+                            _context.Posts.Update(updatePost);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
 
                     _context.Likes.Add(like);
                     _context.SaveChanges();
@@ -153,18 +180,28 @@ namespace API_Network.Controllers
                         WorkProfileId = null
                     };
 
+                    //Actualizar el campo LikesCount en Comment
+                    var comments = await _context.Comments.ToListAsync();
+                    var updateComment = new Comment();
+
+                    foreach (var comment in comments)
+                    {
+                        if (comment.CommentId == likeComment.CommentId)
+                        {
+                            updateComment = comment;
+                            updateComment.LikesCount += 1;
+                            _context.Comments.Update(updateComment);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
+
                     _context.Likes.Add(like);
                     _context.SaveChanges();
 
                     msj = $"Like en el CommentId: {likeComment.CommentId} registrado correctamente";
                 }
-                else
-                {
-                    msj = $"Ya existe un like con los mismos datos registrado";
-                }
-
-                //si es el WorkProfile el que da el like
-                if (likeComment.WorkProfileId != null && likeExist == null)
+                else if (likeComment.WorkProfileId != null && likeExist == null) //si es el WorkProfile el que da el like
                 {
                     var like = new Like
                     {
@@ -173,6 +210,22 @@ namespace API_Network.Controllers
                         UserId = null,
                         WorkProfileId = likeComment.WorkProfileId
                     };
+
+                    //Actualizar el campo LikesCount en Comment
+                    var comments = await _context.Comments.ToListAsync();
+                    var updateComment = new Comment();
+
+                    foreach (var comment in comments)
+                    {
+                        if (comment.CommentId == likeComment.CommentId)
+                        {
+                            updateComment = comment;
+                            updateComment.LikesCount += 1;
+                            _context.Comments.Update(updateComment);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
 
                     _context.Likes.Add(like);
                     _context.SaveChanges();
@@ -230,6 +283,22 @@ namespace API_Network.Controllers
             {
                 if (likeToDelete != null)
                 {
+                    //Actualizar el campo LikesCount en Post
+                    var posts = await _context.Posts.ToListAsync();
+                    var updatePost = new Post();
+
+                    foreach (var post in posts)
+                    {
+                        if (post.PostId == likePost.PostId)
+                        {
+                            updatePost = post;
+                            updatePost.LikesCount--;
+                            _context.Posts.Update(updatePost);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
+
                     _context.Likes.Remove(likeToDelete);
                     await _context.SaveChangesAsync();
                     msj = $"El like en el CommentId: {likePost.PostId}, ha sido eliminado correctamente";
@@ -287,6 +356,22 @@ namespace API_Network.Controllers
             {
                 if (likeToDelete != null)
                 {
+                     //Actualizar el campo LikesCount en Comment
+                    var comments = await _context.Comments.ToListAsync();
+                    var updateComment = new Comment();
+
+                    foreach (var comment in comments)
+                    {
+                        if (comment.CommentId == likeComment.CommentId)
+                        {
+                            updateComment = comment;
+                            updateComment.LikesCount--;
+                            _context.Comments.Update(updateComment);
+                            _context.SaveChanges();
+                            break;
+                        }
+                    }
+
                     _context.Likes.Remove(likeToDelete);
                     await _context.SaveChangesAsync();
                     msj = $"El like en el CommentId: {likeComment.CommentId}, ha sido eliminado correctamente";
