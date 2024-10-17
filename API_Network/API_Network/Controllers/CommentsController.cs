@@ -95,50 +95,6 @@ namespace API_Network.Controllers
             return commentDataList;
         }
 
-        //Authorize]
-        [HttpPost("Like")]
-        public async Task<string> Like(int commentId)
-        {
-            var msj = "";
-            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == commentId);
-
-            comment.LikesCount += 1;
-
-            try
-            {
-                _context.Comments.Update(comment);
-                _context.SaveChanges();
-                msj = "Like registrado correctamente";
-            }
-            catch (Exception ex)
-            {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-            return msj;
-        }//end Like
-
-        //Authorize]
-        [HttpPost("Dislike")]
-        public async Task<string> Dislike(int commentId)
-        {
-            var msj = "";
-            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == commentId);
-
-            comment.LikesCount = comment.LikesCount - 1;
-
-            try
-            {
-                _context.Comments.Update(comment);
-                _context.SaveChanges();
-                msj = "Dislike registrado correctamente";
-            }
-            catch (Exception ex)
-            {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-            return msj;
-        }//end Dislike
-
         //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> AgregarAsync(Comment comment)
@@ -160,6 +116,7 @@ namespace API_Network.Controllers
 
             try
             {
+                comment.LikesCount = 0;
                 _context.Posts.Update(post);
                 _context.Comments.Add(comment);
                 _context.SaveChanges();
@@ -216,6 +173,18 @@ namespace API_Network.Controllers
                             _context.Posts.Update(post);
                         }
                     }//end foreach
+
+                    //se eliminan todos los likes relacionados a este comment
+                    var likes = await _context.Likes.ToListAsync();
+
+                    foreach (var like in likes)
+                    {
+                        if (like.CommentId == commentId)
+                        {
+                            _context.Likes.Remove(like);
+                            _context.SaveChanges();
+                        }
+                    }
 
                     _context.Comments.Remove(comment);
                     _context.SaveChanges();
