@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using API_Network.Helpers;
 using Microsoft.AspNetCore.Identity.Data;
+using System.ComponentModel;
 
 
 namespace API_Network.Controllers
@@ -48,7 +49,11 @@ namespace API_Network.Controllers
             {
                 if (!workProfileExist)
                 {
+                    //Proceso de encriptación
                     workProfile.Salt = HelperCryptography.GenerateSalt();
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, workProfile.Salt);
+                    workProfile.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.WorkProfiles.Add(workProfile);
                     _context.SaveChanges();
                     return Ok(new
@@ -99,16 +104,45 @@ namespace API_Network.Controllers
         public string Editar(WorkProfile workProfile)
         {
             string msj = "Error al editar el perfil";
+
             try
             {
-                _context.WorkProfiles.Update(workProfile);
+                //se busca el usuario actual en la base de datos
+                var existingUser = _context.WorkProfiles.FirstOrDefault(w => w.WorkId == workProfile.WorkId);
+
+                if (existingUser == null)
+                {
+                    return "Usuario no encontrado";
+                }
+
+                //se verifica si la contraseña ha sido cambiada
+                if (!string.IsNullOrEmpty(workProfile.Password) && workProfile.Password != existingUser.Password)
+                {
+                    // Si la contraseña ha sido modificada, se encripta
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, existingUser.Salt);
+                    existingUser.Password = Convert.ToBase64String(hashedPassword);
+                }
+
+                //se actualizan los otros campos del WorkProfile (excepto la contraseña si no ha cambiado)
+                existingUser.Name = workProfile.Name;
+                existingUser.Email = workProfile.Email;
+                existingUser.Number = workProfile.Number;
+                existingUser.Province = workProfile.Province;
+                existingUser.City = workProfile.City;
+                existingUser.WorkDescription = workProfile.WorkDescription;
+                existingUser.ProfilePictureUrl = workProfile.ProfilePictureUrl;
+                existingUser.ImagePublicId = workProfile.ImagePublicId;
+
+                _context.WorkProfiles.Update(existingUser);
                 _context.SaveChanges();
+
                 msj = "Perfil editado correctamente";
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+                msj = $"Error: {ex.Message} {ex.InnerException?.ToString()}";
+            }
+
             return msj;
         }//end Editar
 
@@ -129,7 +163,7 @@ namespace API_Network.Controllers
                     //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
                     foreach (var ws in listWorkSkills)
                     {
-                        if(ws.WorkId == data.WorkId)
+                        if (ws.WorkId == data.WorkId)
                         {
                             _context.WorkSkills.Remove(ws);
                             _context.SaveChanges();
@@ -151,7 +185,7 @@ namespace API_Network.Controllers
         // ***   MÉTODOS PARA RECUPERAR CONTRASEÑA    ***
 
         [HttpPost("Restablecer")]
-        public async Task<string> RestablecerAsync(string email)
+        public async Task<string> Restablecer(string email)
         {
             string msj = "";
 
@@ -184,7 +218,10 @@ namespace API_Network.Controllers
                 var workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == int.Parse(workId));
                 if (password.Equals(confirmarPassword))
                 {
-                    workProfile.Password = password;
+                    //Proceso de encriptación
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(confirmarPassword, workProfile.Salt);
+                    workProfile.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.WorkProfiles.Update(workProfile);
                     await _context.SaveChangesAsync();
 
@@ -227,15 +264,30 @@ namespace API_Network.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => (wp.Email.Equals(loginRequest.Email)) && (wp.Password.Equals(loginRequest.Password)));
-
-            if (temp == null)
+            //se busca al usuario por el email
+            var worker = await _context.WorkProfiles.FirstOrDefaultAsync(w => w.Email.Equals(loginRequest.Email));
+            
+            if (worker == null)
             {
+                //si el usuario no existe
                 return Unauthorized();
             }
             else
             {
-                var autorizado = await autorizacionServices.DevolverToken(temp);
+                //se encriptar la contraseña con el mismo "salt" que está en la base de datos
+                byte[] hashedPassword = HelperCryptography.EncriptarPassword(loginRequest.Password, worker.Salt);
+
+                //se convierte la contraseña almacenada (que está en Base64) a byte[] para compararla
+                byte[] storedPassword = Convert.FromBase64String(worker.Password);
+
+                //se comparan las contraseñas encriptadas
+                if (!HelperCryptography.CompareArrays(hashedPassword, storedPassword))
+                {
+                    return Unauthorized();
+                }
+
+                //si la contraseña es correcta, generar el token
+                var autorizado = await autorizacionServices.DevolverToken(worker);
 
                 if (autorizado == null)
                 {
@@ -244,8 +296,8 @@ namespace API_Network.Controllers
                 else
                 {
                     return Ok(autorizado);
-                }//end else
-            }//end else
+                }
+            }
         }//end Autenticar
     }
 }

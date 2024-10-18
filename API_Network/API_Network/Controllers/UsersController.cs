@@ -48,7 +48,11 @@ namespace API_Network.Controllers
             {
                 if (!userExist)
                 {
+                    //Proceso de encriptación
                     user.Salt = HelperCryptography.GenerateSalt();
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(user.Password, user.Salt);
+                    user.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.Users.Add(user);
                     _context.SaveChanges();
                     return Ok(new
@@ -90,18 +94,48 @@ namespace API_Network.Controllers
         public string Editar(User user)
         {
             string msj = "Error al editar el perfil";
+
             try
             {
-                _context.Users.Update(user);
+                //se busca el usuario actual en la base de datos
+                var existingUser = _context.Users.FirstOrDefault(u => u.UserId == user.UserId);
+
+                if (existingUser == null)
+                {
+                    return "Usuario no encontrado";
+                }
+
+                //se verifica si la contraseña ha sido cambiada
+                if (!string.IsNullOrEmpty(user.Password) && user.Password != existingUser.Password)
+                {
+                    //si la contraseña ha sido modificada, se encripta
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(user.Password, existingUser.Salt);
+                    existingUser.Password = Convert.ToBase64String(hashedPassword);
+                }
+
+                //se actualizan los otros campos del User (excepto la contraseña si no ha cambiado)
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.Email = user.Email;
+                existingUser.Province = user.Province;
+                existingUser.City = user.City;
+                existingUser.Bio = user.Bio;
+                existingUser.ProfilePictureUrl = user.ProfilePictureUrl;
+                existingUser.ImagePublicId = user.ImagePublicId;
+
+                _context.Users.Update(existingUser);
                 _context.SaveChanges();
+
                 msj = "Perfil editado correctamente";
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+                msj = $"Error: {ex.Message} {ex.InnerException?.ToString()}";
+            }
+
             return msj;
-        }//end Editar
+        }
+
 
         //[Authorize]
         [HttpDelete("Eliminar")]
@@ -130,7 +164,7 @@ namespace API_Network.Controllers
         // ***   MÉTODOS PARA RECUPERAR CONTRASEÑA    ***
 
         [HttpPost("Restablecer")]
-        public async Task<string> RestablecerAsync(string email)
+        public async Task<string> Restablecer(string email)
         {
             string msj = "";
 
@@ -163,7 +197,10 @@ namespace API_Network.Controllers
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == int.Parse(userId));
                 if (password.Equals(confirmarPassword))
                 {
-                    user.Password = password;
+                    //Proceso de encriptación
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(confirmarPassword, user.Salt);
+                    user.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
 
@@ -205,15 +242,30 @@ namespace API_Network.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var temp = await _context.Users.FirstOrDefaultAsync(u => (u.Email.Equals(loginRequest.Email)) && (u.Password.Equals(loginRequest.Password)));
+            //se busca al usuario por el email
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(loginRequest.Email));
 
-            if (temp == null)
+            if (user == null)
             {
+                //si el usuario no existe
                 return Unauthorized();
             }
             else
             {
-                var autorizado = await autorizacionServices.DevolverToken(temp);
+                //se encriptar la contraseña con el mismo "salt" que está en la base de datos
+                byte[] hashedPassword = HelperCryptography.EncriptarPassword(loginRequest.Password, user.Salt);
+
+                //se convierte la contraseña almacenada (que está en Base64) a byte[] para compararla
+                byte[] storedPassword = Convert.FromBase64String(user.Password);
+
+                //se comparan las contraseñas encriptadas
+                if (!HelperCryptography.CompareArrays(hashedPassword, storedPassword))
+                {
+                    return Unauthorized();
+                }
+
+                //si la contraseña es correcta, generar el token
+                var autorizado = await autorizacionServices.DevolverToken(user);
 
                 if (autorizado == null)
                 {
@@ -222,8 +274,8 @@ namespace API_Network.Controllers
                 else
                 {
                     return Ok(autorizado);
-                }//end else
-            }//end else
+                }
+            }
         }//end Autenticar
     }
 }
