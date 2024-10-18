@@ -11,5 +11,7 @@ namespace API_Network.Models
 
         public string CollectionImageUrl { get; set; }
 
+        public string ImagePublicId { get; set; }
+
     }
 }

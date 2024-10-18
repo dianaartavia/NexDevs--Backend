@@ -20,5 +20,6 @@ namespace API_Network.Models
         public string LastName { get; set; }
 
         public string ProfilePictureUrlUser { get; set; }
+        public string ImagePublicId { get; set; }
     }
 }

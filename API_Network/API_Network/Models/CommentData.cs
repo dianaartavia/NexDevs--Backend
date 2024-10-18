@@ -13,9 +13,11 @@ namespace API_Network.Models
         public int? WorkId { get; set; }
         public string Name { get; set; }
         public string ProfilePictureUrlWorker { get; set; }
+        public string ImagePublicIdWorker { get; set; }
         public int? UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string ProfilePictureUrlUser { get; set; }
+        public string ImagePublicIdUser { get; set; }
     }
 }
