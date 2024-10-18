@@ -133,32 +133,69 @@ namespace API_Network.Controllers
             return temp;
         }//end Consultar
 
-       //[Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(Post post)
+        public async Task<ActionResult<string>> Agregar(IFormFile photo, [FromForm] Post post)
         {
             string msj = "";
 
             //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
 
+            if (!workExist)
+            {
+                return BadRequest("El WorkId no existe.");
+            }
+
             try
             {
-                if (workExist)
+                // validar si hay imagen
+                if (photo != null)
                 {
-                    post.Approved = 0;
-                    _context.Posts.Add(post);
-                    _context.SaveChanges();
-                    msj = "Post registrado correctamente";
+                    var fileName = photo.FileName;
+                    var fileWithPath = Path.Combine("Uploads", fileName);
+
+                    // guardar temporalmente el archivo en el servidor
+                    using (var stream = new FileStream(fileWithPath, FileMode.Create))
+                    {
+                        await photo.CopyToAsync(stream);
+                    }
+
+                    // configurar los par�metros para subir la imagen a Cloudinary
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(fileWithPath),
+                        UseFilename = true,
+                        Overwrite = true,
+                        Folder = "posts" // carpeta en Cloudinary dedicada a las im�genes de los posts
+                    };
+
+                    // subir la imagen a Cloudinary
+                    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+                    // eliminar el archivo temporal despu�s de la subida
+                    System.IO.File.Delete(fileWithPath);
+
+                    // guardar la URL de la imagen en el post
+                    post.PostImageUrl = uploadResult.SecureUrl.ToString();
                 }
+                post.Approved = 0;
+                post.CreateAt = DateTime.UtcNow;
+
+                // se guarda el post ya con la URL de la imagen
+                _context.Posts.Add(post);
+                await _context.SaveChangesAsync();
+
+                msj = "Post registrado correctamente";
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+                msj = $"Error: {ex.Message} {ex.InnerException?.Message}";
+                return StatusCode(500, msj);
+            }
 
-            return msj;
-        }//end Agregar
+            return Ok(msj);
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -197,14 +234,14 @@ namespace API_Network.Controllers
                 //se eliminan todos los likes relacionados a este post
                     var likes = await _context.Likes.ToListAsync();
 
-                    foreach (var like in likes)
+                foreach (var like in likes)
+                {
+                    if (like.PostId == postId)
                     {
-                        if (like.PostId == postId)
-                        {
-                            _context.Likes.Remove(like);
-                            _context.SaveChanges();
-                        }
+                        _context.Likes.Remove(like);
+                        _context.SaveChanges();
                     }
+                }
 
                 // Buscar el post en la base de datos
                 var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
