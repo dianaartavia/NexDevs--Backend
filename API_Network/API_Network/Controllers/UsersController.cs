@@ -17,10 +17,13 @@ namespace API_Network.Controllers
         private readonly DbContextNetwork _context;
         private readonly IAutorizacionServicesUser autorizacionServices;
 
-        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices)
+        private readonly CloudinaryController _cloudinaryController;
+
+        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices, CloudinaryController cloudinaryController)
         {
             _context = uContext;
             this.autorizacionServices = autorizacionServices;
+            _cloudinaryController = cloudinaryController;
         }//end UsersController
 
         // [Authorize]
@@ -39,24 +42,64 @@ namespace API_Network.Controllers
         }//end Listado
 
         [HttpPost("CrearCuenta")]
-        public IActionResult CrearCuenta(User user)
+        public async Task<IActionResult> CrearCuenta(UserImage user)
         {
             //verifica si ya hay un User con los mismos datos
             bool userExist = _context.Users.Any(u => u.Email == user.Email);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
                 if (!userExist)
                 {
-                    user.Salt = HelperCryptography.GenerateSalt();
-                    _context.Users.Add(user);
+                    if (user.ProfilePictureUrl != null)
+                    {
+                        // Llamar al método de subida de imagen
+                        var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl);
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            // Extraer los valores de la respuesta
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (user.ProfilePictureUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newUser = new User
+                    {
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Email = user.Email,
+                        Password = user.Password,
+                        Province = user.Province,
+                        City = user.City,
+                        Bio = user.Bio,
+                        ProfilePictureUrl = imageUrl,
+                        ProfileType = 'U',
+                        ImagePublicId = publicId
+
+                    };
+
+                    newUser.Salt = HelperCryptography.GenerateSalt();
+                    _context.Users.Add(newUser);
                     _context.SaveChanges();
                     return Ok(new
                     {
                         message = "Cuenta Creada",
-                        userId = user.UserId,
-                        email = user.Email,
-                        password = user.Password
+                        userId = newUser.UserId,
+                        email = newUser.Email,
+                        password = newUser.Password
                     });
                 }
                 else

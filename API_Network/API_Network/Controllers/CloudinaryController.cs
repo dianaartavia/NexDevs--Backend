@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API_Network.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
+    // [ApiController]
+    // [Route("api/[controller]")]
     public class CloudinaryController : ControllerBase
     {
         private readonly string? _cloudinaryUrl;
@@ -15,42 +15,58 @@ namespace API_Network.Controllers
             _cloudinaryUrl = configuration.GetSection("Cloudinary")["URL"];
         }
 
-        [HttpPost]
-        [Route("save")]
+        // [HttpPost]
+        // [Route("save")]
         public async Task<IActionResult> SaveImage(IFormFile photo)
         {
             try
             {
                 Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
-                var fileName = photo.FileName;
-                var fileWithPath = Path.Combine("Uploads", fileName);
 
-                using (var stream = new FileStream(fileWithPath, FileMode.Create))
+                // Asegurarse de que el archivo ha sido recibido correctamente
+                if (photo == null || photo.Length == 0)
                 {
-                    photo.CopyTo(stream);
+                    return BadRequest("No se ha subido ninguna imagen.");
                 }
 
-                var uploadParams = new ImageUploadParams
+                // Subir la imagen directamente desde el archivo en memoria sin guardarla localmente
+                using (var stream = photo.OpenReadStream())
                 {
-                    File = new FileDescription(fileWithPath),
-                    UseFilename = true,
-                    Overwrite = true,
-                    Folder = "users"
-                };
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(photo.FileName, stream), // Subir desde el stream del archivo
+                        UseFilename = true,
+                        Overwrite = true,
+                        Folder = "users"
+                    };
 
-                var uploadResult = await cloudinary.UploadAsync(uploadParams);
-                System.IO.File.Delete(fileWithPath);
+                    // Subir la imagen a Cloudinary
+                    var uploadResult = await cloudinary.UploadAsync(uploadParams);
 
-                return Ok(uploadResult);
+                    // Verificar si la subida fue exitosa
+                    if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        // Extraer PublicId y URL de la imagen subida
+                        var publicId = uploadResult.PublicId;
+                        var url = uploadResult.SecureUrl.ToString();
+
+                        // Devolver una respuesta con PublicId y URL
+                        return Ok(new { PublicId = publicId, Url = url });
+                    }
+                    else
+                    {
+                        return BadRequest("Error al subir la imagen a Cloudinary.");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error: {ex.Message}");
             }
         }
 
-        [HttpDelete]
-        [Route("delete")]
+        // [HttpDelete]
+        // [Route("delete")]
         public async Task<IActionResult> DeleteImage(string publicId)
         {
             try
@@ -67,8 +83,8 @@ namespace API_Network.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("edit")]
+        // [HttpPut]
+        // [Route("edit")]
         public async Task<IActionResult> EditImage(string publicId, IFormFile photo)
         {
             try
