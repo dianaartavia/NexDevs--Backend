@@ -133,70 +133,32 @@ namespace API_Network.Controllers
             return temp;
         }//end Consultar
 
-        //[Authorize]
+       //[Authorize]
         [HttpPost("Agregar")]
-        public async Task<ActionResult<string>> Agregar(IFormFile photo, [FromForm] Post post)
+        public string Agregar(Post post)
         {
             string msj = "";
 
+            //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
-
-            if (!workExist)
-            {
-                return BadRequest("El WorkId no existe.");
-            }
 
             try
             {
-                // validar si hay imagen
-                if (photo != null)
+                if (workExist)
                 {
-                    var fileName = photo.FileName;
-                    var fileWithPath = Path.Combine("Uploads", fileName);
-
-                    // guardar temporalmente el archivo en el servidor
-                    using (var stream = new FileStream(fileWithPath, FileMode.Create))
-                    {
-                        await photo.CopyToAsync(stream);
-                    }
-
-                    // configurar los par�metros para subir la imagen a Cloudinary
-                    var uploadParams = new ImageUploadParams
-                    {
-                        File = new FileDescription(fileWithPath),
-                        UseFilename = true,
-                        Overwrite = true,
-                        Folder = "posts" // carpeta en Cloudinary dedicada a las im�genes de los posts
-                    };
-
-                    // subir la imagen a Cloudinary
-                    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-
-                    // eliminar el archivo temporal despu�s de la subida
-                    System.IO.File.Delete(fileWithPath);
-
-                    // guardar la URL de la imagen en el post
-                    post.PostImageUrl = uploadResult.SecureUrl.ToString();
+                    post.Approved = 0;
+                    _context.Posts.Add(post);
+                    _context.SaveChanges();
+                    msj = "Post registrado correctamente";
                 }
-
-                post.Approved = 0;
-                post.LikesCount = 0;
-                post.CreateAt = DateTime.UtcNow;
-
-                // se guarda el post ya con la URL de la imagen
-                _context.Posts.Add(post);
-                await _context.SaveChangesAsync();
-
-                msj = "Post registrado correctamente";
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException?.Message}";
-                return StatusCode(500, msj);
-            }
+                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+            }//end
 
-            return Ok(msj);
-        }
+            return msj;
+        }//end Agregar
 
         //[Authorize]
         [HttpPut("Editar")]

@@ -10,5 +10,7 @@ namespace API_Network.Models
         public string CategoryName { get; set; }
 
         public string CategoryImageUrl { get; set; }
+
+        public string ImagePublicId { get; set; }
     }
 }

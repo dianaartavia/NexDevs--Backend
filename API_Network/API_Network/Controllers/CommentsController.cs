@@ -62,10 +62,12 @@ namespace API_Network.Controllers
                                           WorkId = null, // No hay workId en este caso
                                           Name = null, // No hay nombre de trabajador
                                           ProfilePictureUrlWorker = null, // No hay foto de perfil de trabajador
+                                          ImagePublicIdWorker = null,
                                           UserId = user.UserId,
                                           FirstName = user.FirstName,
                                           LastName = user.LastName,
-                                          ProfilePictureUrlUser = user.ProfilePictureUrl
+                                          ProfilePictureUrlUser = user.ProfilePictureUrl,
+                                          ImagePublicIdUser = user.ImagePublicId
                                       }).ToListAsync();
 
             // Obtener comentarios con información de perfil de trabajo
@@ -82,10 +84,12 @@ namespace API_Network.Controllers
                                           WorkId = worker.WorkId,
                                           Name = worker.Name,
                                           ProfilePictureUrlWorker = worker.ProfilePictureUrl,
+                                          ImagePublicIdWorker = worker.ImagePublicId,
                                           UserId = null, // No hay UserId en este caso
                                           FirstName = null, // No hay nombre de usuario
                                           LastName = null, // No hay apellido de usuario
-                                          ProfilePictureUrlUser = null // No hay foto de perfil de usuario
+                                          ProfilePictureUrlUser = null, // No hay foto de perfil de usuario
+                                          ImagePublicIdUser = null
                                       }).ToListAsync();
 
             // Combinar ambas listas de comentarios
@@ -97,7 +101,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPost("Agregar")]
-        public async Task<string> AgregarAsync(Comment comment)
+        public async Task<string> Agregar(Comment comment)
         {
             string msj = "";
 

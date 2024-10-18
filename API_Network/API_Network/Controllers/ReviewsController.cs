@@ -57,7 +57,8 @@ namespace API_Network.Controllers
                                      UserId = user.UserId,
                                      FirstName = user.FirstName,
                                      LastName = user.LastName,
-                                     ProfilePictureUrlUser = user.ProfilePictureUrl
+                                     ProfilePictureUrlUser = user.ProfilePictureUrl,
+                                     ImagePublicId = user.ImagePublicId
                                  }).ToListAsync();
 
             // Retornar la lista con los resultados
