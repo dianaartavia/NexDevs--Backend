@@ -17,7 +17,7 @@ namespace API_Network.Controllers
 
         // [HttpPost]
         // [Route("save")]
-        public async Task<IActionResult> SaveImage(IFormFile photo)
+        public async Task<IActionResult> SaveImage(IFormFile photo, string folder)
         {
             try
             {
@@ -34,11 +34,12 @@ namespace API_Network.Controllers
                 {
                     var uploadParams = new ImageUploadParams
                     {
-                        File = new FileDescription(photo.FileName, stream), // Subir desde el stream del archivo
+                        File = new FileDescription(photo.FileName, stream),
                         UseFilename = true,
                         Overwrite = true,
-                        Folder = "users"
+                        Folder = folder
                     };
+
 
                     // Subir la imagen a Cloudinary
                     var uploadResult = await cloudinary.UploadAsync(uploadParams);
@@ -85,34 +86,30 @@ namespace API_Network.Controllers
 
         // [HttpPut]
         // [Route("edit")]
-        public async Task<IActionResult> EditImage(string publicId, IFormFile photo)
+        public async Task<IActionResult> EditImage(string publicId, IFormFile photo, string folder)
         {
             try
             {
                 Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
-                var fileName = photo.FileName;
-                var fileWithPath = Path.Combine("Uploads", fileName);
 
-                using (var stream = new FileStream(fileWithPath, FileMode.Create))
+                // Verificar si el archivo es nulo o tiene un tamaño inválido
+                if (photo == null || photo.Length == 0)
                 {
-                    photo.CopyTo(stream);
+                    return BadRequest("No se proporcionó una imagen válida.");
                 }
 
-                var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(fileWithPath),
-                    UseFilename = true,
-                    Overwrite = true,
-                    Folder = "users"
-                };
-
-                var uploadResult = await cloudinary.UploadAsync(uploadParams);
-
+                // Eliminar la imagen anterior de Cloudinary
                 var deleteParams = new DeletionParams(publicId);
-                await cloudinary.DestroyAsync(deleteParams);
+                var deleteResult = await cloudinary.DestroyAsync(deleteParams);
+                if (deleteResult.Result != "ok")
+                {
+                    return BadRequest("No se pudo eliminar la imagen anterior.");
+                }
 
-                System.IO.File.Delete(fileWithPath);
+                // Subir la nueva imagen
+                var uploadResult = await this.SaveImage(photo, folder);
                 return Ok(uploadResult);
+
             }
             catch (Exception ex)
             {

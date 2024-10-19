@@ -56,7 +56,7 @@ namespace API_Network.Controllers
                     if (user.ProfilePictureUrl != null)
                     {
                         // Llamar al método de subida de imagen
-                        var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl);
+                        var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl, "users");
 
                         if (result is OkObjectResult okResult)
                         {
@@ -86,7 +86,7 @@ namespace API_Network.Controllers
                         City = user.City,
                         Bio = user.Bio,
                         ProfilePictureUrl = imageUrl,
-                        ProfileType = 'U',
+                        ProfileType = user.ProfileType,
                         ImagePublicId = publicId
 
                     };
@@ -130,22 +130,51 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(User user)
+        public async Task<string> Editar(UserImage user)
         {
             string msj = "Error al editar el perfil";
+            var userExist = _context.Users.FirstOrDefault(u => u.UserId == user.UserId);
             try
             {
-                _context.Users.Update(user);
+                if (user.ProfilePictureUrl != null)
+                {
+                    var result = await _cloudinaryController.EditImage(userExist.ImagePublicId, user.ProfilePictureUrl, "users");
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var uploadResult = okResult.Value as dynamic;
+                        if (uploadResult != null)
+                        {
+                            userExist.ProfilePictureUrl = uploadResult.Url;
+                            userExist.ImagePublicId = uploadResult.PublicId;
+                        }
+                    }
+                }else if(user.ProfilePictureUrl == null){
+                    userExist.ProfilePictureUrl="ND";
+                    userExist.ImagePublicId ="ND";
+                }
+
+                // Actualizar los demás campos del perfil con los datos recibidos de UserImage
+                userExist.FirstName = user.FirstName;
+                userExist.LastName = user.LastName;
+                userExist.Email = user.Email;
+                userExist.Password = user.Password;
+                userExist.Province = user.Province;
+                userExist.City = user.City;
+                userExist.Bio = user.Bio;
+                userExist.ProfileType = user.ProfileType;
+
+                _context.Users.Update(userExist);
                 _context.SaveChanges();
                 msj = "Perfil editado correctamente";
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
             return msj;
-        }//end Editar
-
+        }
+        
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
@@ -158,6 +187,9 @@ namespace API_Network.Controllers
 
                 if (data != null)
                 {
+                    //se elimina la imagen de cloudinary
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
+
                     _context.Users.Remove(data);
                     _context.SaveChanges();
                     msj = $"El perfil de {data.FirstName} {data.LastName}, ha sido eliminado correctamente";
@@ -268,5 +300,21 @@ namespace API_Network.Controllers
                 }//end else
             }//end else
         }//end Autenticar
+
+        public string GetImageFileName(string imageUrl)
+        {
+            // Crea una nueva instancia de Uri
+            var uri = new Uri(imageUrl);
+
+            // Obtiene la ruta de la URL
+            var path = uri.AbsolutePath; // /v1729309429/users/48f7eb72134ebb24eaddf64adfae6dfa_p9mmji.jpg
+
+            // Divide la ruta por '/' y toma el último elemento
+            var segments = path.Split('/');
+            var fileName = segments[^1]; // Usa el operador de índice para obtener el último elemento
+
+            return fileName;
+        }
+
     }
 }

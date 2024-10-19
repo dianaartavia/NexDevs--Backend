@@ -2,6 +2,7 @@
 using API_Network.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 
 namespace API_Network.Controllers
 {
@@ -10,10 +11,11 @@ namespace API_Network.Controllers
     public class CategoriesController : Controller
     {
         private readonly DbContextNetwork _context;
-
-        public CategoriesController(DbContextNetwork wcContext)
+        private readonly CloudinaryController _cloudinaryController;
+        public CategoriesController(DbContextNetwork wcContext, CloudinaryController cloudinaryController)
         {
             _context = wcContext;
+            _cloudinaryController = cloudinaryController;
         }
 
         //[Authorize]
@@ -43,18 +45,49 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(Category category)
+        public async Task<string> Agregar(CategoryImage category)
         {
             string msj = "";
-
             //verifica si ya hay un Categorie con los mismos datos
-            bool categorie = _context.Categories.Any(c => c.CategoryId == category.CategoryId);
+            bool categoryExist = _context.Categories.Any(c => c.CategoryId == category.CategoryId);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
-                if (!categorie)
+                if (!categoryExist)
                 {
-                    _context.Categories.Add(category);
+                    if (category.CategoryImageUrl != null)
+                    {
+                        // Llamar al método de subida de imagen
+                        var result = await _cloudinaryController.SaveImage(category.CategoryImageUrl, "categories");
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            // Extraer los valores de la respuesta
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (category.CategoryImageUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newCategory = new Category
+                    {
+                        CategoryName = category.CategoryName,
+                        CategoryImageUrl = imageUrl,
+                        ImagePublicId = publicId
+                    };
+
+                    _context.Categories.Add(newCategory);
                     _context.SaveChanges();
                     msj = "Categoria registrada correctamente";
                 }
@@ -78,10 +111,10 @@ namespace API_Network.Controllers
             string msj = "";
             try
             {
-                
-                    _context.Categories.Update(category);
-                    _context.SaveChanges();
-                    msj = "Categoria editada correctamente";
+
+                _context.Categories.Update(category);
+                _context.SaveChanges();
+                msj = "Categoria editada correctamente";
             }
             catch (Exception ex)
             {
@@ -113,6 +146,10 @@ namespace API_Network.Controllers
                         _context.SaveChanges();
 
                     }//end foreach
+
+                    //se elimina la imagen de cloudinary
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
+
                     _context.Categories.Remove(data);
                     _context.SaveChanges();
                     msj = $"La Categoria: {data.CategoryName}, ha sido eliminada correctamente";
