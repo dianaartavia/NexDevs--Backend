@@ -115,18 +115,45 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(Collection collection)
+        public async Task<string> EditarAsync(CollectionImage collection)
         {
-            string msj = "";
+            string msj = "Error al editar";
+            var collectionExist = _context.Collections.FirstOrDefault(c => c.CollectionId == collection.CollectionId);
 
             //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId);
 
             try
             {
+                if (collection.CollectionImageUrl != null)
+                {
+                    var tempPublicId = collectionExist.ImagePublicId;
+
+                    var result = await _cloudinaryController.SaveImage(collection.CollectionImageUrl, "collection");
+
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var uploadResult = okResult.Value as dynamic;
+                        if (uploadResult != null)
+                        {
+                            await _cloudinaryController.DeleteImage(tempPublicId);
+                            collectionExist.CollectionImageUrl = uploadResult.Url;
+                            collectionExist.ImagePublicId = uploadResult.PublicId;
+                        }
+                    }
+                }
+                else if (collection.CollectionImageUrl == null)
+                {
+                    collectionExist.CollectionImageUrl = "ND";
+                    collectionExist.ImagePublicId = "ND";
+                }
+
+                collectionExist.WorkId = collection.WorkId;
+
                 if (workExist)
                 {
-                    _context.Collections.Update(collection);
+                    _context.Collections.Update(collectionExist);
                     _context.SaveChanges();
                     msj = "Collection editado correctamente";
                 }

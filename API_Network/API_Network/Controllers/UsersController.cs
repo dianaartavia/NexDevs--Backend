@@ -134,7 +134,7 @@ namespace API_Network.Controllers
         {
             string msj = "Error al editar el perfil";
             var userExist = _context.Users.FirstOrDefault(u => u.UserId == user.UserId);
-            user.Salt=userExist.Salt;
+
             try
             {
                 if (user.ProfilePictureUrl != null)

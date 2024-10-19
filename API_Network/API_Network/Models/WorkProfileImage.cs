@@ -24,9 +24,6 @@ namespace API_Network.Models
         public IFormFile ProfilePictureUrl { get; set; }
 
         public char ProfileType { get; set; }
-       
-        public string Salt { get; set; }
-
-
+      
     }
 }
