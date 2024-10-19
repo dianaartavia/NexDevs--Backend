@@ -2,7 +2,7 @@
 
 namespace API_Network.Models
 {
-    public class WorkProfile
+    public class WorkProfileImage
     {
         [Key]
         public int WorkId { get; set; }
@@ -21,12 +21,11 @@ namespace API_Network.Models
 
         public string WorkDescription { get; set; }
 
-        public string ProfilePictureUrl { get; set; }
+        public IFormFile ProfilePictureUrl { get; set; }
 
         public char ProfileType { get; set; }
-
+       
         public string Salt { get; set; }
-        public string ImagePublicId { get; set; }
 
 
     }

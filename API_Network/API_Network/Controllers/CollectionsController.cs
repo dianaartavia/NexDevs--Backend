@@ -11,10 +11,12 @@ namespace API_Network.Controllers
     public class CollectionsController : Controller
     {
         private readonly DbContextNetwork _context;
+        private readonly CloudinaryController _cloudinaryController;
 
-        public CollectionsController(DbContextNetwork cContext)
+        public CollectionsController(DbContextNetwork cContext, CloudinaryController cloudinaryController)
         {
             _context = cContext;
+            _cloudinaryController = cloudinaryController;
         }
 
         //[Authorize]
@@ -51,17 +53,49 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(Collection collection)
+        public async Task<string> Agregar(CollectionImage collection)
         {
             string msj = "";
             //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
                 if (workExist)
                 {
-                    _context.Collections.Add(collection);
+                    if (collection.CollectionImageUrl != null)
+                    {
+                        // Llamar al método de subida de imagen
+                        var result = await _cloudinaryController.SaveImage(collection.CollectionImageUrl, "collection");
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            // Extraer los valores de la respuesta
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (collection.CollectionImageUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newCollection = new Collection
+                    {
+                        WorkId = collection.WorkId,
+                        CollectionImageUrl = imageUrl,
+                        ImagePublicId = publicId
+                    };
+
+                    _context.Collections.Add(newCollection);
                     _context.SaveChanges();
                     msj = "Collection registrado correctamente";
                 }
@@ -111,30 +145,33 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpDelete("Eliminar")]
-        public async Task<string>Eliminar(int id)
+        public async Task<string> Eliminar(int id)
         {
             string msj = "";
 
             try
             {
-                var temp = await _context.Collections.FirstOrDefaultAsync(c => c.CollectionId == id);
-                if (temp == null)
+                var data = await _context.Collections.FirstOrDefaultAsync(c => c.CollectionId == id);
+                if (data == null)
                 {
                     msj = "No existe ningun collection con el ID " + id;
                 }
                 else
                 {
-                    _context.Collections.Remove(temp);
+                    //se elimina la imagen de cloudinary
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
+
+                    _context.Collections.Remove(data);
                     await _context.SaveChangesAsync();
-                    msj = $"Collection con el ID {temp.CollectionId}, eliminado correctamente";
+                    msj = $"Collection con el ID {data.CollectionId}, eliminado correctamente";
                 }//end else
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
         }//end Eliminar
-        
+
     }
 }//end namespace

@@ -14,22 +14,12 @@ namespace API_Network.Controllers
     public class PostsController : Controller
     {
         private readonly DbContextNetwork _context;
-        private readonly Cloudinary _cloudinary;
+        private readonly CloudinaryController _cloudinaryController;
 
-        public PostsController(IConfiguration configuration, DbContextNetwork pContext)
+        public PostsController(DbContextNetwork pContext, CloudinaryController cloudinaryController)
         {
-            var cloudinaryUrl = configuration.GetSection("Cloudinary").GetSection("URL").Value;
-            var uri = new Uri(cloudinaryUrl);
-
-            var cloudName = uri.Host; // Cloud Name
-            var apiKey = uri.UserInfo.Split(':')[0]; // API Key
-            var apiSecret = uri.UserInfo.Split(':')[1]; // API Secret
-
-            // Inicializar Cloudinary con la cuenta
-            var account = new Account(cloudName, apiKey, apiSecret);
-            _cloudinary = new Cloudinary(account);
-
             _context = pContext;
+            _cloudinaryController = cloudinaryController;
         }
 
         //[Authorize]
@@ -133,21 +123,54 @@ namespace API_Network.Controllers
             return temp;
         }//end Consultar
 
-       //[Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
-        public string Agregar(Post post)
+        public async Task<string> Agregar(PostImage post)
         {
             string msj = "";
-
             //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
                 if (workExist)
                 {
-                    post.Approved = 0;
-                    _context.Posts.Add(post);
+                    if (post.PostImageUrl != null)
+                    {
+                        var result = await _cloudinaryController.SaveImage(post.PostImageUrl, "posts");
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (post.PostImageUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newPost = new Post
+                    {
+                        WorkId = post.WorkId,
+                        ContentPost = post.ContentPost,
+                        PostImageUrl = imageUrl,
+                        CreateAt = post.CreateAt,
+                        LikesCount = post.LikesCount,
+                        CommentsCount = post.CommentsCount,
+                        ImagePublicId = publicId
+                    };
+
+                    newPost.Approved = 0;
+                    _context.Posts.Add(newPost);
                     _context.SaveChanges();
                     msj = "Post registrado correctamente";
                 }
@@ -195,46 +218,27 @@ namespace API_Network.Controllers
             try
             {
                 //se eliminan todos los likes relacionados a este post
-                    var likes = await _context.Likes.ToListAsync();
+                var likes = await _context.Likes.ToListAsync();
 
-                    foreach (var like in likes)
+                foreach (var like in likes)
+                {
+                    if (like.PostId == postId)
                     {
-                        if (like.PostId == postId)
-                        {
-                            _context.Likes.Remove(like);
-                            _context.SaveChanges();
-                        }
+                        _context.Likes.Remove(like);
+                        _context.SaveChanges();
                     }
+                }
 
                 // Buscar el post en la base de datos
                 var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
 
-                if (postToDelete == null)
-                {
-                    return $"No existe ning�n post con el ID: {postId}";
-                }
+                //se elimina la imagen de cloudinary
+                await _cloudinaryController.DeleteImage(postToDelete.ImagePublicId);
 
-                // Extraer el public_id de la URL de la imagen
-                var publicId = GetPublicIdFromUrl(postToDelete.PostImageUrl);
-
-
-                // Eliminar la imagen de Cloudinary
-                var deleteParams = new DeletionParams(publicId);
-                var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
-
-                // Verificar si la eliminaci�n fue exitosa
-                if (deleteResult.StatusCode == HttpStatusCode.OK)
-                {
-                    // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
-                    _context.Posts.Remove(postToDelete);
-                    await _context.SaveChangesAsync();
-                    msj = $"{publicId} Post con el ID {postToDelete.PostId} eliminado correctamente.";
-                }
-                else
-                {
-
-                    msj = "Error al eliminar la imagen en Cloudinary: " + deleteResult.Error?.Message;
-                }
+                // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
+                _context.Posts.Remove(postToDelete);
+                await _context.SaveChangesAsync();
+                msj =$"El PostId: {postToDelete.PostId}, ha sido eliminado correcatamente";
             }
             catch (Exception ex)
             {
@@ -243,25 +247,5 @@ namespace API_Network.Controllers
 
             return msj;
         }
-
-        private string GetPublicIdFromUrl(string imageUrl)
-        {
-            var uri = new Uri(imageUrl);
-            var segments = uri.Segments;
-
-            // Comprobar que la URL tiene suficientes segmentos para extraer el public_id
-            if (segments.Length > 3)
-            {
-                // Combina la carpeta y el nombre del archivo para crear el public_id completo
-                var publicId = string.Join("", segments.Skip(3)).Split('.')[0]; // Extraer el public_id sin la extensi�n
-                return publicId;
-            }
-
-            throw new ArgumentException("La URL de la imagen no es v�lida para extraer el public_id.");
-        }
-
-
-
-
     }//end class
 }//end namespace

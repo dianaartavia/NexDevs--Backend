@@ -16,11 +16,14 @@ namespace API_Network.Controllers
     {
         private readonly DbContextNetwork _context;
         private readonly IAutorizacionServicesWorkProfile autorizacionServices;
+        private readonly CloudinaryController _cloudinaryController;
 
-        public WorkProfileController(DbContextNetwork wpContext, IAutorizacionServicesWorkProfile autorizacionServices)
+        public WorkProfileController(DbContextNetwork wpContext, IAutorizacionServicesWorkProfile autorizacionServices, CloudinaryController cloudinaryController)
         {
             _context = wpContext;
             this.autorizacionServices = autorizacionServices;
+            _cloudinaryController = cloudinaryController;
+
         }//end WorkProfilecontroller
 
         // [Authorize]
@@ -39,24 +42,60 @@ namespace API_Network.Controllers
         }//end Listado
 
         [HttpPost("CrearCuenta")]
-        public IActionResult CrearCuenta(WorkProfile workProfile)
+        public async Task<IActionResult> CrearCuentaAsync(WorkProfileImage workProfile)
         {
             //verifica si ya hay un WorkProfile con los mismos datos
             bool workProfileExist = _context.WorkProfiles.Any(wp => wp.Email == workProfile.Email);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
                 if (!workProfileExist)
                 {
-                    workProfile.Salt = HelperCryptography.GenerateSalt();
-                    _context.WorkProfiles.Add(workProfile);
+                    if (workProfile.ProfilePictureUrl != null)
+                    {
+                        var result = await _cloudinaryController.SaveImage(workProfile.ProfilePictureUrl, "workProfile");
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (workProfile.ProfilePictureUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newWorkProfile = new WorkProfile{
+                        Name = workProfile.Name,
+                        Email = workProfile.Email,
+                        Number = workProfile.Number,
+                        Password = workProfile.Password,
+                        Province = workProfile.Province,
+                        City = workProfile.City,
+                        WorkDescription = workProfile.WorkDescription,
+                        ProfilePictureUrl = imageUrl,
+                        ProfileType= workProfile.ProfileType,
+                        ImagePublicId =  publicId
+
+                    };
+                    newWorkProfile.Salt = HelperCryptography.GenerateSalt();
+                    _context.WorkProfiles.Add(newWorkProfile);
                     _context.SaveChanges();
                     return Ok(new
                     {
                         message = "Cuenta Creada",
-                        workId = workProfile.WorkId,
-                        email = workProfile.Email,
-                        password = workProfile.Password
+                        workId = newWorkProfile.WorkId,
+                        email = newWorkProfile.Email,
+                        password = newWorkProfile.Password
                     });
                 }
                 else
@@ -129,12 +168,15 @@ namespace API_Network.Controllers
                     //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
                     foreach (var ws in listWorkSkills)
                     {
-                        if(ws.WorkId == data.WorkId)
+                        if (ws.WorkId == data.WorkId)
                         {
                             _context.WorkSkills.Remove(ws);
                             _context.SaveChanges();
                         }
                     }//end foreach
+                    
+                    //se elimina la imagen de cloudinary
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
 
                     _context.WorkProfiles.Remove(data);
                     _context.SaveChanges();

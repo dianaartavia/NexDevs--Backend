@@ -1,3 +1,4 @@
+using API_Network.Controllers;
 using API_Network.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,9 @@ builder.Services.AddControllers();
 
 //Contexto y string de conexion
 builder.Services.AddDbContext<API_Network.Context.DbContextNetwork>(context => context.UseSqlServer(builder.Configuration.GetConnectionString("StringConexion")));
+
+// Registrar CloudinaryController
+builder.Services.AddTransient<CloudinaryController>();
 
 //Configuracion del servicio JWT
 builder.Services.AddScoped<IAutorizacionServicesUser, AutorizacionServicesUser>();

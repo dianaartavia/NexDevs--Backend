@@ -17,10 +17,13 @@ namespace API_Network.Controllers
         private readonly DbContextNetwork _context;
         private readonly IAutorizacionServicesUser autorizacionServices;
 
-        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices)
+        private readonly CloudinaryController _cloudinaryController;
+
+        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices, CloudinaryController cloudinaryController)
         {
             _context = uContext;
             this.autorizacionServices = autorizacionServices;
+            _cloudinaryController = cloudinaryController;
         }//end UsersController
 
         // [Authorize]
@@ -39,24 +42,64 @@ namespace API_Network.Controllers
         }//end Listado
 
         [HttpPost("CrearCuenta")]
-        public IActionResult CrearCuenta(User user)
+        public async Task<IActionResult> CrearCuenta(UserImage user)
         {
             //verifica si ya hay un User con los mismos datos
             bool userExist = _context.Users.Any(u => u.Email == user.Email);
+            var imageUrl = "";
+            var publicId = "";
 
             try
             {
                 if (!userExist)
                 {
-                    user.Salt = HelperCryptography.GenerateSalt();
-                    _context.Users.Add(user);
+                    if (user.ProfilePictureUrl != null)
+                    {
+                        // Llamar al método de subida de imagen
+                        var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl, "users");
+
+                        if (result is OkObjectResult okResult)
+                        {
+                            // Extraer los valores de la respuesta
+                            var uploadResult = okResult.Value as dynamic;
+
+                            if (uploadResult != null)
+                            {
+                                publicId = uploadResult.PublicId;
+                                imageUrl = uploadResult.Url;
+                            }
+                        }
+                    }
+                    else if (user.ProfilePictureUrl == null)
+                    {
+                        imageUrl = "ND";
+                        publicId = "ND";
+                    }
+
+                    var newUser = new User
+                    {
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Email = user.Email,
+                        Password = user.Password,
+                        Province = user.Province,
+                        City = user.City,
+                        Bio = user.Bio,
+                        ProfilePictureUrl = imageUrl,
+                        ProfileType = user.ProfileType,
+                        ImagePublicId = publicId
+
+                    };
+
+                    newUser.Salt = HelperCryptography.GenerateSalt();
+                    _context.Users.Add(newUser);
                     _context.SaveChanges();
                     return Ok(new
                     {
                         message = "Cuenta Creada",
-                        userId = user.UserId,
-                        email = user.Email,
-                        password = user.Password
+                        userId = newUser.UserId,
+                        email = newUser.Email,
+                        password = newUser.Password
                     });
                 }
                 else
@@ -87,21 +130,57 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(User user)
+        public async Task<string> Editar(UserImage user)
         {
             string msj = "Error al editar el perfil";
+            var userExist = _context.Users.FirstOrDefault(u => u.UserId == user.UserId);
+            user.Salt=userExist.Salt;
             try
             {
-                _context.Users.Update(user);
+                if (user.ProfilePictureUrl != null)
+                {
+                    var tempPublicId = userExist.ImagePublicId;
+
+                    var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl, "users");
+
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var uploadResult = okResult.Value as dynamic;
+                        if (uploadResult != null)
+                        {
+                            await _cloudinaryController.DeleteImage(tempPublicId);
+                            userExist.ProfilePictureUrl = uploadResult.Url;
+                            userExist.ImagePublicId = uploadResult.PublicId;
+                        }
+                    }
+                }
+                else if (user.ProfilePictureUrl == null)
+                {
+                    userExist.ProfilePictureUrl = "ND";
+                    userExist.ImagePublicId = "ND";
+                }
+
+                // Actualizar los demás campos del perfil con los datos recibidos de UserImage
+                userExist.FirstName = user.FirstName;
+                userExist.LastName = user.LastName;
+                userExist.Email = user.Email;
+                userExist.Password = user.Password;
+                userExist.Province = user.Province;
+                userExist.City = user.City;
+                userExist.Bio = user.Bio;
+                userExist.ProfileType = user.ProfileType;
+
+                _context.Users.Update(userExist);
                 _context.SaveChanges();
                 msj = "Perfil editado correctamente";
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
@@ -115,6 +194,9 @@ namespace API_Network.Controllers
 
                 if (data != null)
                 {
+                    //se elimina la imagen de cloudinary
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
+
                     _context.Users.Remove(data);
                     _context.SaveChanges();
                     msj = $"El perfil de {data.FirstName} {data.LastName}, ha sido eliminado correctamente";
