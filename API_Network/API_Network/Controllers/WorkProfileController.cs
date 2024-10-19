@@ -87,7 +87,12 @@ namespace API_Network.Controllers
                         ImagePublicId =  publicId
 
                     };
+
+                    //Proceso de encriptación
                     newWorkProfile.Salt = HelperCryptography.GenerateSalt();
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, newWorkProfile.Salt);
+                    newWorkProfile.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.WorkProfiles.Add(newWorkProfile);
                     _context.SaveChanges();
                     return Ok(new
@@ -165,10 +170,17 @@ namespace API_Network.Controllers
                     workerExist.ImagePublicId = "ND";
                 }
 
+                //se verifica si la contraseña ha sido cambiada
+                if (!string.IsNullOrEmpty(workProfile.Password) && workProfile.Password != workerExist.Password)
+                {
+                    // Si la contraseña ha sido modificada, se encripta
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, workerExist.Salt);
+                    workerExist.Password = Convert.ToBase64String(hashedPassword);
+                }
+
                 // Actualizar los demás campos del perfil con los datos recibidos de WorkProfileImage
                 workerExist.Name = workProfile.Name;
                 workerExist.Email = workProfile.Email;
-                workerExist.Password = workProfile.Password;
                 workerExist.Province = workProfile.Province;
                 workerExist.City = workProfile.City;
                 workerExist.WorkDescription = workProfile.WorkDescription;
@@ -260,7 +272,10 @@ namespace API_Network.Controllers
                 var workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == int.Parse(workId));
                 if (password.Equals(confirmarPassword))
                 {
-                    workProfile.Password = password;
+                    //Proceso de encriptación
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(confirmarPassword, workProfile.Salt);
+                    workProfile.Password = Convert.ToBase64String(hashedPassword);
+
                     _context.WorkProfiles.Update(workProfile);
                     await _context.SaveChangesAsync();
 
@@ -303,15 +318,30 @@ namespace API_Network.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => (wp.Email.Equals(loginRequest.Email)) && (wp.Password.Equals(loginRequest.Password)));
+            //se busca al usuario por el email
+            var worker = await _context.WorkProfiles.FirstOrDefaultAsync(w => w.Email.Equals(loginRequest.Email));
 
-            if (temp == null)
+            if (worker == null)
             {
+                //si el usuario no existe
                 return Unauthorized();
             }
             else
             {
-                var autorizado = await autorizacionServices.DevolverToken(temp);
+                //se encriptar la contraseña con el mismo "salt" que está en la base de datos
+                byte[] hashedPassword = HelperCryptography.EncriptarPassword(loginRequest.Password, worker.Salt);
+
+                //se convierte la contraseña almacenada (que está en Base64) a byte[] para compararla
+                byte[] storedPassword = Convert.FromBase64String(worker.Password);
+
+                //se comparan las contraseñas encriptadas
+                if (!HelperCryptography.CompareArrays(hashedPassword, storedPassword))
+                {
+                    return Unauthorized();
+                }
+
+                //si la contraseña es correcta, generar el token
+                var autorizado = await autorizacionServices.DevolverToken(worker);
 
                 if (autorizado == null)
                 {
@@ -320,8 +350,8 @@ namespace API_Network.Controllers
                 else
                 {
                     return Ok(autorizado);
-                }//end else
-            }//end else
+                }
+            }
         }//end Autenticar
     }
 }
