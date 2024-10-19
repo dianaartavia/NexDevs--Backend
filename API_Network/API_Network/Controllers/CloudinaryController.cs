@@ -86,35 +86,35 @@ namespace API_Network.Controllers
 
         // [HttpPut]
         // [Route("edit")]
-        public async Task<IActionResult> EditImage(string publicId, IFormFile photo, string folder)
-        {
-            try
-            {
-                Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
+        //public async Task<IActionResult> EditImage(string publicId, IFormFile photo, string folder)
+        //{
+        //    try
+        //    {
+        //        Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
 
-                // Verificar si el archivo es nulo o tiene un tamaño inválido
-                if (photo == null || photo.Length == 0)
-                {
-                    return BadRequest("No se proporcionó una imagen válida.");
-                }
+        //        // Verificar si el archivo es nulo o tiene un tamaño inválido
+        //        if (photo == null || photo.Length == 0)
+        //        {
+        //            return BadRequest("No se proporcionó una imagen válida.");
+        //        }
 
-                // Eliminar la imagen anterior de Cloudinary
-                var deleteParams = new DeletionParams(publicId);
-                var deleteResult = await cloudinary.DestroyAsync(deleteParams);
-                if (deleteResult.Result != "ok")
-                {
-                    return BadRequest("No se pudo eliminar la imagen anterior.");
-                }
+        //        // Eliminar la imagen anterior de Cloudinary
+        //        var deleteParams = new DeletionParams(publicId);
+        //        var deleteResult = await cloudinary.DestroyAsync(deleteParams);
+        //        if (deleteResult.Result != "ok")
+        //        {
+        //            return BadRequest("No se pudo eliminar la imagen anterior.");
+        //        }
 
-                // Subir la nueva imagen
-                var uploadResult = await this.SaveImage(photo, folder);
-                return Ok(uploadResult);
+        //        // Subir la nueva imagen
+        //        var uploadResult = await this.SaveImage(photo, folder);
+        //        return Ok(uploadResult);
 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
     }
 }
