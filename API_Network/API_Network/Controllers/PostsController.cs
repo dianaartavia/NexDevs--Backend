@@ -185,18 +185,49 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(Post post)
+        public async Task<string> EditarAsync(PostImage post)
         {
-            string msj = "";
-
+            string msj = "Error al editar el post";
             //verifica que el workId exista
             bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
+            var postExist = _context.Posts.FirstOrDefault(p => p.PostId == post.PostId);
 
             try
             {
+                if (post.PostImageUrl != null)
+                {
+                    var tempPublicId = postExist.ImagePublicId;
+
+                    var result = await _cloudinaryController.SaveImage(post.PostImageUrl, "posts");
+
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var uploadResult = okResult.Value as dynamic;
+                        if (uploadResult != null)
+                        {
+                            await _cloudinaryController.DeleteImage(tempPublicId);
+                            postExist.PostImageUrl = uploadResult.Url;
+                            postExist.ImagePublicId = uploadResult.PublicId;
+                        }
+                    }
+                }
+                else if (post.PostImageUrl == null)
+                {
+                    postExist.PostImageUrl = "ND";
+                    postExist.ImagePublicId = "ND";
+                }
+
+                postExist.WorkId= post.WorkId;
+                postExist.ContentPost=post.ContentPost;
+                postExist.CreateAt = post.CreateAt;
+                postExist.LikesCount=post.LikesCount;
+                postExist.CommentsCount=post.CommentsCount;
+                postExist.Approved=post.Approved;
+
                 if (workExist)
                 {
-                    _context.Posts.Update(post);
+                    _context.Posts.Update(postExist);
                     _context.SaveChanges();
                     msj = "Post editado correctamente";
                 }

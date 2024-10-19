@@ -135,12 +135,46 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public string Editar(WorkProfile workProfile)
+        public async Task<string> EditarAsync(WorkProfileImage workProfile)
         {
             string msj = "Error al editar el perfil";
+            var workerExist = _context.WorkProfiles.FirstOrDefault(w => w.WorkId == workProfile.WorkId);
+
             try
             {
-                _context.WorkProfiles.Update(workProfile);
+                if (workProfile.ProfilePictureUrl != null)
+                {
+                    var tempPublicId = workerExist.ImagePublicId;
+
+                    var result = await _cloudinaryController.SaveImage(workProfile.ProfilePictureUrl, "workProfile");
+
+                    if (result is OkObjectResult okResult)
+                    {
+                        var uploadResult = okResult.Value as dynamic;
+                        if (uploadResult != null)
+                        {
+                            await _cloudinaryController.DeleteImage(tempPublicId);
+                            workerExist.ProfilePictureUrl = uploadResult.Url;
+                            workerExist.ImagePublicId = uploadResult.PublicId;
+                        }
+                    }
+                }
+                else if (workProfile.ProfilePictureUrl == null)
+                {
+                    workerExist.ProfilePictureUrl = "ND";
+                    workerExist.ImagePublicId = "ND";
+                }
+
+                // Actualizar los demás campos del perfil con los datos recibidos de WorkProfileImage
+                workerExist.Name = workProfile.Name;
+                workerExist.Email = workProfile.Email;
+                workerExist.Password = workProfile.Password;
+                workerExist.Province = workProfile.Province;
+                workerExist.City = workProfile.City;
+                workerExist.WorkDescription = workProfile.WorkDescription;
+                workerExist.ProfileType = workProfile.ProfileType;
+
+                _context.WorkProfiles.Update(workerExist);
                 _context.SaveChanges();
                 msj = "Perfil editado correctamente";
             }
