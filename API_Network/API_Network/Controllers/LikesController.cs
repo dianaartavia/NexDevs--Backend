@@ -19,6 +19,23 @@ namespace API_Network.Controllers
             _context = context;
         }
 
+        [HttpGet("CheckIfIsLiked")]
+        public async Task<bool> CheckIfIsLiked(int postId, int? userId = null, int? workProfileId = null)
+        {
+            // Comprobar si ambos son nulos
+            if (userId == null && workProfileId == null)
+            {
+                return false;
+            }
+
+            // Verificar si existe el "like"
+            var likeExists = await _context.Likes.AnyAsync(like =>
+                like.PostId == postId &&
+                (like.UserId == userId || like.WorkProfileId == workProfileId));
+
+            return likeExists;
+        } 
+
         //[Authorize]
         [HttpPost("LikePost")]
         public async Task<string> LikePost(LikePost likePost)
