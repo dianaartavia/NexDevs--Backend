@@ -64,7 +64,6 @@ namespace API_Network.Controllers
 
                         if (result is OkObjectResult okResult)
                         {
-                            // Extraer los valores de la respuesta
                             var uploadResult = okResult.Value as dynamic;
 
                             if (uploadResult != null)
@@ -104,27 +103,36 @@ namespace API_Network.Controllers
             return msj;
         }//end Agregar
 
-        //[Authorize]
         [HttpPut("Editar")]
         public async Task<string> EditarAsync(CategoryImage category)
         {
             string msj = "Error al editar la categoria";
-            var categoryExist = _context.Categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
+
             try
             {
+                // Verifica si la categoría existe
+                var categoryExist = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
+
+                if (categoryExist == null)
+                {
+                    return "No se encontró la categoría";
+                }
+
                 if (category.CategoryImageUrl != null)
                 {
                     var tempPublicId = categoryExist.ImagePublicId;
 
                     var result = await _cloudinaryController.SaveImage(category.CategoryImageUrl, "categories");
 
-
                     if (result is OkObjectResult okResult)
                     {
                         var uploadResult = okResult.Value as dynamic;
                         if (uploadResult != null)
                         {
+                            // Elimina la imagen anterior de Cloudinary
                             await _cloudinaryController.DeleteImage(tempPublicId);
+
+                            // Asigna la nueva imagen
                             categoryExist.CategoryImageUrl = uploadResult.Url;
                             categoryExist.ImagePublicId = uploadResult.PublicId;
                         }
@@ -132,23 +140,73 @@ namespace API_Network.Controllers
                 }
                 else if (category.CategoryImageUrl == null)
                 {
+                    // Si no se proporciona una imagen, asigna valores por defecto
                     categoryExist.CategoryImageUrl = "ND";
                     categoryExist.ImagePublicId = "ND";
                 }
 
-                categoryExist.CategoryName= category.CategoryName;
+                // Actualiza el nombre de la categoría
+                categoryExist.CategoryName = category.CategoryName;
 
+                // Guarda los cambios en la base de datos
                 _context.Categories.Update(categoryExist);
-                _context.SaveChanges();
-                msj = "Categoria editada correctamente";
+                await _context.SaveChangesAsync();
+
+                msj = "Categoría editada correctamente";
             }
             catch (Exception ex)
             {
-                msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+                msj = $"Error: {ex.Message} {ex.InnerException?.ToString()}";
+            }
 
             return msj;
-        }//end Editar
+        }
+
+
+        //[HttpPut("Editar")]
+        //public async Task<string> EditarAsync(CategoryImage category)
+        //{
+        //    string msj = "Error al editar la categoria";
+        //    var categoryExist = _context.Categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
+        //    try
+        //    {
+        //        if (category.CategoryImageUrl != null)
+        //        {
+        //            var tempPublicId = categoryExist.ImagePublicId;
+
+        //            var result = await _cloudinaryController.SaveImage(category.CategoryImageUrl, "categories");
+
+
+        //            if (result is OkObjectResult okResult)
+        //            {
+        //                var uploadResult = okResult.Value as dynamic;
+        //                if (uploadResult != null)
+        //                {
+        //                    await _cloudinaryController.DeleteImage(tempPublicId);
+        //                    categoryExist.CategoryImageUrl = uploadResult.Url;
+        //                    categoryExist.ImagePublicId = uploadResult.PublicId;
+        //                }
+        //            }
+        //        }
+        //        else if (category.CategoryImageUrl == null)
+        //        {
+        //            categoryExist.CategoryImageUrl = "ND";
+        //            categoryExist.ImagePublicId = "ND";
+        //        }
+
+        //        categoryExist.CategoryName = category.CategoryName;
+
+        //        _context.Categories.Update(categoryExist);
+        //        _context.SaveChanges();
+        //        msj = "Categoria editada correctamente";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
+        //    }//end
+
+        //    return msj;
+        //}//end Editar
 
         //[Authorize]
         [HttpDelete("Eliminar")]
