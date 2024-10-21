@@ -147,7 +147,7 @@ namespace API_Network.Controllers
 
             try
             {
-                if (workProfile.ProfilePictureUrl != null)
+                if (workProfile.ProfilePictureUrl != null && workProfile.ProfilePictureUrl.Length > 0)
                 {
                     var tempPublicId = workerExist.ImagePublicId;
 

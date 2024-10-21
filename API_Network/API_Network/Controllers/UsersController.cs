@@ -140,12 +140,11 @@ namespace API_Network.Controllers
 
             try
             {
-                if (user.ProfilePictureUrl != null)
+                if (user.ProfilePictureUrl != null && user.ProfilePictureUrl.Length > 0)
                 {
                     var tempPublicId = userExist.ImagePublicId;
 
                     var result = await _cloudinaryController.SaveImage(user.ProfilePictureUrl, "users");
-
 
                     if (result is OkObjectResult okResult)
                     {
@@ -158,10 +157,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (user.ProfilePictureUrl == null)
+                else
                 {
-                    userExist.ProfilePictureUrl = "ND";
-                    userExist.ImagePublicId = "ND";
+                    userExist.ProfilePictureUrl = userExist.ProfilePictureUrl ?? "ND";
+                    userExist.ImagePublicId = userExist.ImagePublicId ?? "ND";
                 }
 
                 //se verifica si la contraseña ha sido cambiada
