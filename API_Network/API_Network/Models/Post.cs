@@ -13,8 +13,10 @@ namespace API_Network.Models
 
         public string ContentPost { get; set; }
 
+        public int PaymentReceipt { get; set; }
+
         public string PostImageUrl { get; set; }
-        
+
         public DateTime CreateAt { get; set; }
 
         public int LikesCount { get; set; }
@@ -22,7 +24,7 @@ namespace API_Network.Models
         public int CommentsCount { get; set; }
 
         public int Approved { get; set; }
-        
+
         public string ImagePublicId { get; set; }
 
         [ForeignKey("WorkId")]

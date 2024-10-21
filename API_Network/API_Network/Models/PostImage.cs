@@ -13,6 +13,8 @@ namespace API_Network.Models
 
         public string ContentPost { get; set; }
 
+        public int PaymentReceipt { get; set; }
+
         public IFormFile PostImageUrl { get; set; }
         
         public DateTime CreateAt { get; set; }

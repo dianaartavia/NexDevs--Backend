@@ -34,6 +34,7 @@ namespace API_Network.Controllers
                     PostId = p.PostId,
                     WorkId = p.WorkId,
                     ContentPost = p.ContentPost,
+                    PaymentReceipt = p.PaymentReceipt,
                     PostImageUrl = p.PostImageUrl,
                     CreateAt = p.CreateAt,
                     LikesCount = p.LikesCount,
@@ -135,6 +136,11 @@ namespace API_Network.Controllers
 
             try
             {
+                if (post.PaymentReceipt <= 0)
+                {
+                    return "No se puede registrar el post sin un recibo de pago válido.";
+                }
+
                 if (workExist)
                 {
                     if (post.PostImageUrl != null)
@@ -166,7 +172,8 @@ namespace API_Network.Controllers
                         CreateAt = post.CreateAt,
                         LikesCount = post.LikesCount,
                         CommentsCount = post.CommentsCount,
-                        ImagePublicId = publicId
+                        ImagePublicId = publicId,
+                        PaymentReceipt = post.PaymentReceipt
                     };
 
                     newPost.Approved = 0;
@@ -224,6 +231,7 @@ namespace API_Network.Controllers
                 postExist.LikesCount=post.LikesCount;
                 postExist.CommentsCount=post.CommentsCount;
                 postExist.Approved=post.Approved;
+                postExist.PaymentReceipt=post.PaymentReceipt;
 
                 if (workExist)
                 {
