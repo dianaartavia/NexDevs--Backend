@@ -164,10 +164,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (workProfile.ProfilePictureUrl == null)
+                else
                 {
-                    workerExist.ProfilePictureUrl = "ND";
-                    workerExist.ImagePublicId = "ND";
+                    workerExist.ProfilePictureUrl = workerExist.ProfilePictureUrl ?? "ND";
+                    workerExist.ImagePublicId = workerExist.ImagePublicId ?? "ND";
                 }
 
                 //se verifica si la contraseña ha sido cambiada
