@@ -228,8 +228,8 @@ namespace API_Network.Controllers
                 postExist.WorkId= post.WorkId;
                 postExist.ContentPost=post.ContentPost;
                 postExist.CreateAt = post.CreateAt;
-                postExist.LikesCount=post.LikesCount;
-                postExist.CommentsCount=post.CommentsCount;
+                //postExist.LikesCount=post.LikesCount;
+                //postExist.CommentsCount=post.CommentsCount;
                 postExist.Approved=post.Approved;
                 postExist.PaymentReceipt=post.PaymentReceipt;
 
