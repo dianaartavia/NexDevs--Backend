@@ -143,10 +143,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (collection.CollectionImageUrl == null)
+                else
                 {
-                    collectionExist.CollectionImageUrl = "ND";
-                    collectionExist.ImagePublicId = "ND";
+                    collectionExist.CollectionImageUrl = collectionExist.CollectionImageUrl ?? "ND";
+                    collectionExist.ImagePublicId = collectionExist.ImagePublicId ?? "ND";
                 }
 
                 collectionExist.WorkId = collection.WorkId;

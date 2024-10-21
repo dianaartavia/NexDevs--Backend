@@ -104,7 +104,7 @@ namespace API_Network.Controllers
         }//end Agregar
 
         [HttpPut("Editar")]
-        public async Task<string> EditarAsync(CategoryImage category)
+        public async Task<string> Editar(CategoryImage category)
         {
             string msj = "Error al editar la categoria";
 
@@ -138,11 +138,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (category.CategoryImageUrl == null)
+                else
                 {
-                    // Si no se proporciona una imagen, asigna valores por defecto
-                    categoryExist.CategoryImageUrl = "ND";
-                    categoryExist.ImagePublicId = "ND";
+                    categoryExist.CategoryImageUrl = categoryExist.CategoryImageUrl ?? "ND";
+                    categoryExist.ImagePublicId = categoryExist.ImagePublicId ?? "ND";
                 }
 
                 // Actualiza el nombre de la categoría

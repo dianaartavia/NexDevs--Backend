@@ -185,7 +185,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public async Task<string> EditarAsync(PostImage post)
+        public async Task<string> Editar(PostImage post)
         {
             string msj = "Error al editar el post";
             //verifica que el workId exista
@@ -212,10 +212,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (post.PostImageUrl == null)
+                else
                 {
-                    postExist.PostImageUrl = "ND";
-                    postExist.ImagePublicId = "ND";
+                    postExist.PostImageUrl = postExist.PostImageUrl ?? "ND";
+                    postExist.ImagePublicId = postExist.ImagePublicId ?? "ND";
                 }
 
                 postExist.WorkId= post.WorkId;
