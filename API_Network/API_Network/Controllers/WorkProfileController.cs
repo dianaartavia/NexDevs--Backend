@@ -147,7 +147,7 @@ namespace API_Network.Controllers
 
             try
             {
-                if (workProfile.ProfilePictureUrl != null)
+                if (workProfile.ProfilePictureUrl != null && workProfile.ProfilePictureUrl.Length > 0)
                 {
                     var tempPublicId = workerExist.ImagePublicId;
 
@@ -164,10 +164,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (workProfile.ProfilePictureUrl == null)
+                else
                 {
-                    workerExist.ProfilePictureUrl = "ND";
-                    workerExist.ImagePublicId = "ND";
+                    workerExist.ProfilePictureUrl = workerExist.ProfilePictureUrl ?? "ND";
+                    workerExist.ImagePublicId = workerExist.ImagePublicId ?? "ND";
                 }
 
                 //se verifica si la contraseña ha sido cambiada

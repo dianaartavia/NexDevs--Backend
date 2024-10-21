@@ -106,7 +106,7 @@ namespace API_Network.Controllers
 
         //[Authorize]
         [HttpPut("Editar")]
-        public async Task<string> EditarAsync(CategoryImage category)
+        public async Task<string> Editar(CategoryImage category)
         {
             string msj = "Error al editar la categoria";
             var categoryExist = _context.Categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
@@ -130,10 +130,10 @@ namespace API_Network.Controllers
                         }
                     }
                 }
-                else if (category.CategoryImageUrl == null)
+                else
                 {
-                    categoryExist.CategoryImageUrl = "ND";
-                    categoryExist.ImagePublicId = "ND";
+                    categoryExist.CategoryImageUrl = categoryExist.CategoryImageUrl ?? "ND";
+                    categoryExist.ImagePublicId = categoryExist.ImagePublicId ?? "ND";
                 }
 
                 categoryExist.CategoryName= category.CategoryName;
