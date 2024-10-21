@@ -52,6 +52,7 @@ namespace API_Network.Controllers
 
                 workSkillDtos.Add(new WorkSkillDto
                 {
+                    WorkSkillId = ws.WorkSkillId,
                     WorkId = ws.WorkId,
                     SkillId = ws.SkillId,
                     SkillName = skillName.SkillName
@@ -169,4 +170,5 @@ public class WorkSkillDto
     public int WorkId { get; set; }
     public int SkillId { get; set; }
     public string SkillName { get; set; }
+    public int WorkSkillId { get; internal set; }
 }
