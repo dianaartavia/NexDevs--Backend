@@ -50,6 +50,7 @@ namespace API_Network.Controllers
 
                 workCategoryDtos.Add(new WorkCategoryDto
                 {
+                    id = wc.Id,
                     WorkId = wc.WorkId,
                     CategoryId = wc.CategoryId,
                     CategoryName = categoryName.CategoryName
@@ -173,6 +174,7 @@ namespace API_Network.Controllers
 //Un modelo para el consultar con el categoryName incluido
 public class WorkCategoryDto
 {
+    public int id { get; set; }
     public int WorkId { get; set; }
     public int CategoryId { get; set; }
     public string CategoryName { get; set; }
