@@ -6,9 +6,7 @@ namespace API_Network.Models
     {
         [Key]
         public int WorkSkillId { get; set; }
-
         public int WorkId { get; set; }
-
         public int SkillId { get; set; }
     }
 }

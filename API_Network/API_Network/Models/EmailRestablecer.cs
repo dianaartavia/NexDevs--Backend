@@ -14,49 +14,25 @@ namespace API_Network.Models
             {
                 string pathToTemplate = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "EmailRestablecer.html");
                 string htmlBody = File.ReadAllText(pathToTemplate);
-
-                //se crea la instancia del obj email 
-                MailMessage email = new MailMessage();
-
-                //asunto
-                email.Subject = "Restablecer contraseña en Network";
-
-                //destinatario
-                email.To.Add(new MailAddress(correo));
-
-                //emisor
-                email.From = new MailAddress("networkapp.noreply@gmail.com");
-
-                //html para el body del email
-                htmlBody = htmlBody.Replace("{{Email}}", correo)
+                MailMessage email = new MailMessage(); //se crea la instancia del obj email 
+                email.Subject = "Restablecer contraseña en Network"; //asunto
+                email.To.Add(new MailAddress(correo)); //destinatario
+                email.From = new MailAddress("networkapp.noreply@gmail.com"); //emisor
+                htmlBody = htmlBody.Replace("{{Email}}", correo) //html para el body del email
                     .Replace("{{workId}}", workId);
-
-                //indicar que el contenido es en html
-                email.IsBodyHtml = true;
-
-                //prioridad
-                email.Priority = MailPriority.Normal;
-
+                email.IsBodyHtml = true; //indicar que el contenido es en html
+                email.Priority = MailPriority.Normal; //prioridad
                 //instanciar la vista del html para el body del email
                 AlternateView view = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
                 email.AlternateViews.Add(view);
-
-                //agregar view al email
-                SmtpClient smtp = new SmtpClient("smtp.gmail.com");
-
-                // # puerto 
-                smtp.Port = 587;
-
-                //seguridad tipo SSL
-                smtp.EnableSsl = true;
-
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com"); //agregar view al email
+                smtp.Port = 587; //agregar view al email
+                smtp.EnableSsl = true; //seguridad tipo SSL
                 //credencialess por default para el buzón de correo
                 smtp.UseDefaultCredentials = false;
                 smtp.Credentials = new NetworkCredential("networkapp.noreply@gmail.com", "stlx uoub lcbf ssby");
-
                 //enviar email
                 smtp.Send(email);
-
                 //se liberan los recursos
                 email.Dispose();
                 smtp.Dispose();
@@ -65,6 +41,6 @@ namespace API_Network.Models
             {
                 throw ex;
             }
-        }//end Enviar
+        }
     }
 }

@@ -30,8 +30,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
@@ -41,13 +41,10 @@ namespace API_Network.Controllers
             var workCategories = await _context.WorkCategories
                                             .Where(wc => wc.WorkId == workId)
                                             .ToListAsync();
-
             var workCategoryDtos = new List<WorkCategoryDto>();
-
             foreach (var wc in workCategories)
             {
                 var categoryName = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == wc.CategoryId);
-
                 workCategoryDtos.Add(new WorkCategoryDto
                 {
                     id = wc.Id,
@@ -56,7 +53,6 @@ namespace API_Network.Controllers
                     CategoryName = categoryName.CategoryName
                 });
             }
-
             return Ok(workCategoryDtos);
         }
 
@@ -65,7 +61,6 @@ namespace API_Network.Controllers
         public async Task<ActionResult<WorkCategory>> ConsultarPorId(int id)
         {
             var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.Id == id);
-
             return temp;
         }
 
@@ -74,16 +69,9 @@ namespace API_Network.Controllers
         public string Agregar(WorkCategory workCategory)
         {
             string msj = "";
-
-            //verifica si ya hay un workCategory con los mismos datos
-            bool workCategoryExist = _context.WorkCategories.Any(wc => wc.WorkId == workCategory.WorkId && wc.CategoryId == workCategory.CategoryId);
-
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId);
-
-            //verifica que el categoryId exista
-            bool categoryExiste = _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId);
-
+            bool workCategoryExist = _context.WorkCategories.Any(wc => wc.WorkId == workCategory.WorkId && wc.CategoryId == workCategory.CategoryId); //verifica si ya hay un workCategory con los mismos datos
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId); //verifica que el workId exista
+            bool categoryExiste = _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId); //verifica que el categoryId exista
             try
             {
                 if (!workCategoryExist && workExist && categoryExiste)
@@ -95,31 +83,23 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
         public string Editar(WorkCategory workCategory)
         {
             string msj = "";
-
-            //verifica si ya hay un WorkCategorie con los mismos datos
-            bool workCategoryExist = _context.WorkCategories.Any(wc => wc.WorkId == workCategory.WorkId && wc.CategoryId == workCategory.CategoryId);
-
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId);
-
-            //verifica que la category exista
-            bool categoryExist = _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId);
-
+            bool workCategoryExist = _context.WorkCategories.Any(wc => wc.WorkId == workCategory.WorkId && wc.CategoryId == workCategory.CategoryId); //verifica si ya hay un WorkCategorie con los mismos datos
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workCategory.WorkId); //verifica que el workId exista
+            bool categoryExist = _context.Categories.Any(c => c.CategoryId == workCategory.CategoryId); //verifica que la category exista
             try
             {
                 if (!workCategoryExist && workExist && categoryExist)
@@ -131,22 +111,20 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {
             string msj = "";
-
             try
             {
                 var temp = await _context.WorkCategories.FirstOrDefaultAsync(wc => wc.Id == id);
@@ -159,17 +137,16 @@ namespace API_Network.Controllers
                     _context.WorkCategories.Remove(temp);
                     await _context.SaveChangesAsync();
                     msj = $"WorkCategory con el Id {temp.Id}, eliminado correctamente";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
-
-    }//end class
-}//end namespace
+        }
+    }
+}
 
 //Un modelo para el consultar con el categoryName incluido
 public class WorkCategoryDto

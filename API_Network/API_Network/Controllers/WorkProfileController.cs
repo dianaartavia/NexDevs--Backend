@@ -24,8 +24,7 @@ namespace API_Network.Controllers
             this.autorizacionServices = autorizacionServices;
             _cloudinaryController = cloudinaryController;
 
-        }//end WorkProfilecontroller
-
+        }
         // [Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkProfile>> Listado()
@@ -38,17 +37,15 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end else
-        }//end Listado
+            }
+        }
 
         [HttpPost("CrearCuenta")]
         public async Task<IActionResult> CrearCuentaAsync(WorkProfileImage workProfile)
         {
-            //verifica si ya hay un WorkProfile con los mismos datos
-            bool workProfileExist = _context.WorkProfiles.Any(wp => wp.Email == workProfile.Email);
+            bool workProfileExist = _context.WorkProfiles.Any(wp => wp.Email == workProfile.Email); //verifica si ya hay un WorkProfile con los mismos datos
             var imageUrl = "";
             var publicId = "";
-
             try
             {
                 if (!workProfileExist)
@@ -56,11 +53,9 @@ namespace API_Network.Controllers
                     if (workProfile.ProfilePictureUrl != null)
                     {
                         var result = await _cloudinaryController.SaveImage(workProfile.ProfilePictureUrl, "workProfile");
-
                         if (result is OkObjectResult okResult)
                         {
                             var uploadResult = okResult.Value as dynamic;
-
                             if (uploadResult != null)
                             {
                                 publicId = uploadResult.PublicId;
@@ -73,8 +68,8 @@ namespace API_Network.Controllers
                         imageUrl = "ND";
                         publicId = "ND";
                     }
-
-                    var newWorkProfile = new WorkProfile{
+                    var newWorkProfile = new WorkProfile
+                    {
                         Name = workProfile.Name,
                         Email = workProfile.Email,
                         Number = workProfile.Number,
@@ -83,11 +78,10 @@ namespace API_Network.Controllers
                         City = workProfile.City,
                         WorkDescription = workProfile.WorkDescription,
                         ProfilePictureUrl = imageUrl,
-                        ProfileType= workProfile.ProfileType,
-                        ImagePublicId =  publicId
+                        ProfileType = workProfile.ProfileType,
+                        ImagePublicId = publicId
 
                     };
-
                     //Proceso de encriptación
                     newWorkProfile.Salt = HelperCryptography.GenerateSalt();
                     byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, newWorkProfile.Salt);
@@ -118,9 +112,8 @@ namespace API_Network.Controllers
                     message = $"Error: {ex.Message}",
                     innerException = ex.InnerException?.Message
                 });
-            }//end
-
-        }//end CrearCuenta
+            }
+        }
 
         //[Authorize]
         [HttpGet("BuscarEmail")]
@@ -128,7 +121,7 @@ namespace API_Network.Controllers
         {
             var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpGet("BuscarID")]
@@ -136,7 +129,7 @@ namespace API_Network.Controllers
         {
             var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == id);
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -144,15 +137,12 @@ namespace API_Network.Controllers
         {
             string msj = "Error al editar el perfil";
             var workerExist = _context.WorkProfiles.FirstOrDefault(w => w.WorkId == workProfile.WorkId);
-
             try
             {
                 if (workProfile.ProfilePictureUrl != null && workProfile.ProfilePictureUrl.Length > 0)
                 {
                     var tempPublicId = workerExist.ImagePublicId;
-
                     var result = await _cloudinaryController.SaveImage(workProfile.ProfilePictureUrl, "workProfile");
-
                     if (result is OkObjectResult okResult)
                     {
                         var uploadResult = okResult.Value as dynamic;
@@ -169,15 +159,11 @@ namespace API_Network.Controllers
                     workerExist.ProfilePictureUrl = workerExist.ProfilePictureUrl ?? "ND";
                     workerExist.ImagePublicId = workerExist.ImagePublicId ?? "ND";
                 }
-
-                //se verifica si la contraseña ha sido cambiada
-                if (!string.IsNullOrEmpty(workProfile.Password) && workProfile.Password != workerExist.Password)
+                if (!string.IsNullOrEmpty(workProfile.Password) && workProfile.Password != workerExist.Password) //se verifica si la contraseña ha sido cambiada
                 {
-                    // Si la contraseña ha sido modificada, se encripta
-                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, workerExist.Salt);
+                    byte[] hashedPassword = HelperCryptography.EncriptarPassword(workProfile.Password, workerExist.Salt); // Si la contraseña ha sido modificada, se encripta
                     workerExist.Password = Convert.ToBase64String(hashedPassword);
                 }
-
                 // Actualizar los demás campos del perfil con los datos recibidos de WorkProfileImage
                 workerExist.Name = workProfile.Name;
                 workerExist.Email = workProfile.Email;
@@ -193,37 +179,30 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
         {
             string msj = "No se ha podido eliminar el perfil";
-
             try
             {
                 var data = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
-
                 if (data != null)
                 {
                     var listWorkSkills = await _context.WorkSkills.ToListAsync();
-
-                    //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
-                    foreach (var ws in listWorkSkills)
+                    foreach (var ws in listWorkSkills) //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
                     {
                         if (ws.WorkId == data.WorkId)
                         {
                             _context.WorkSkills.Remove(ws);
                             _context.SaveChanges();
                         }
-                    }//end foreach
-                    
-                    //se elimina la imagen de cloudinary
-                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
-
+                    }
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId); //se elimina la imagen de cloudinary
                     _context.WorkProfiles.Remove(data);
                     _context.SaveChanges();
                     msj = $"El perfil de {data.Name}, ha sido eliminado correctamente";
@@ -232,9 +211,9 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
             return msj;
-        }//end Eliminar
+        }
 
         // ***   MÉTODOS PARA RECUPERAR CONTRASEÑA    ***
 
@@ -242,14 +221,10 @@ namespace API_Network.Controllers
         public async Task<string> RestablecerAsync(string email)
         {
             string msj = "";
-
-            //se verifica si existe un usuario con ese email
-            bool emailExist = _context.WorkProfiles.Any(wp => wp.Email.Equals(email));
-
+            bool emailExist = _context.WorkProfiles.Any(wp => wp.Email.Equals(email)); //se verifica si existe un usuario con ese email
             if (emailExist)
             {
                 WorkProfile workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
-
                 //enviar email
                 await EnviarEmail(email, workProfile.WorkId.ToString());
                 msj = "Correo enviado";
@@ -257,16 +232,14 @@ namespace API_Network.Controllers
             else
             {
                 msj = "Este correo no se encuentra registrado";
-            }//end else
-
+            }
             return msj;
-        }//end Restablecer
+        }
 
         [HttpPost("NuevaContraseña")]
         public async Task<string> NuevaContraseña(string workId, string password, string confirmarPassword)
         {
             string msj = "";
-
             try
             {
                 var workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == int.Parse(workId));
@@ -280,69 +253,55 @@ namespace API_Network.Controllers
                     await _context.SaveChangesAsync();
 
                     return msj = "Se ha restablecido la contraseña exitosamente";
-                }//end if
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end catch
-
+            }
             return msj;
-        }//end Restablecer
+        }
 
         private async Task<bool> EnviarEmail(String email, string workId)
         {
             string mensaje = "";
             bool enviado = false;
             WorkProfile workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
-
             try
             {
                 EmailRestablecer emailRestablecer = new EmailRestablecer();
                 emailRestablecer.Enviar(email, workId);
                 enviado = true;
-
                 return enviado;
             }
             catch (Exception e)
             {
                 mensaje = "Error al enviar el correo " + e.Message;
-
                 return false;
             }
-        }//end EnviarEmail
-
+        }
         // ***   MÉTODO AUTENTICACION DE LOGIN    ***
 
-        //Modificado para que sea por medio de un objeto y no con parametros escritos, asi mas facil y seguro de implementar en el front/
+        //Modificado para que sea por medio de un objeto y no con parametros escritos, asi mas facil y seguro de implementar en el front
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             //se busca al usuario por el email
             var worker = await _context.WorkProfiles.FirstOrDefaultAsync(w => w.Email.Equals(loginRequest.Email));
-
             if (worker == null)
             {
-                //si el usuario no existe
-                return Unauthorized();
+                return Unauthorized(); //si el usuario no existe
             }
             else
             {
-                //se encriptar la contraseña con el mismo "salt" que está en la base de datos
-                byte[] hashedPassword = HelperCryptography.EncriptarPassword(loginRequest.Password, worker.Salt);
-
-                //se convierte la contraseña almacenada (que está en Base64) a byte[] para compararla
-                byte[] storedPassword = Convert.FromBase64String(worker.Password);
-
+                byte[] hashedPassword = HelperCryptography.EncriptarPassword(loginRequest.Password, worker.Salt); //se encriptar la contraseña con el mismo "salt" que está en la base de datos
+                byte[] storedPassword = Convert.FromBase64String(worker.Password); //se convierte la contraseña almacenada (que está en Base64) a byte[] para compararla
                 //se comparan las contraseñas encriptadas
                 if (!HelperCryptography.CompareArrays(hashedPassword, storedPassword))
                 {
                     return Unauthorized();
                 }
-
-                //si la contraseña es correcta, generar el token
-                var autorizado = await autorizacionServices.DevolverToken(worker);
-
+                var autorizado = await autorizacionServices.DevolverToken(worker); //si la contraseña es correcta, generar el token
                 if (autorizado == null)
                 {
                     return Unauthorized();
@@ -352,6 +311,6 @@ namespace API_Network.Controllers
                     return Ok(autorizado);
                 }
             }
-        }//end Autenticar
+        }
     }
 }

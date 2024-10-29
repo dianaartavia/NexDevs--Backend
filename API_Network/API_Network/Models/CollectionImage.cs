@@ -6,11 +6,7 @@ namespace API_Network.Models
     {
         [Key]
         public int CollectionId { get; set; }
-
         public int WorkId { get; set; }
-
         public IFormFile CollectionImageUrl { get; set; }
-
-
     }
 }

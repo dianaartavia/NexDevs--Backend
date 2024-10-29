@@ -16,7 +16,6 @@ namespace API_Network.Controllers
         {
             _context = wsContext;
         }
-
         //[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkSkill>> Listado()
@@ -30,26 +29,21 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
         public async Task<ActionResult<List<WorkSkillDto>>> Consultar(int workId)
         {
-            //Obtenet las skills asociadas al workId
+            //Obtener las skills asociadas al workId
             var workSkills = await _context.WorkSkills
                                             .Where(ws => ws.WorkId == workId)
                                             .ToListAsync();
-
-            //se inicializa variable que va a tener los ids y nombre de la skill
-            var workSkillDtos = new List<WorkSkillDto>();
-
-            //se recorre la variable workSkill y para llenar la lista de workSkillDtos
-            foreach(var ws in workSkills)
+            var workSkillDtos = new List<WorkSkillDto>(); //se inicializa variable que va a tener los ids y nombre de la skill
+            foreach (var ws in workSkills) //se recorre la variable workSkill y para llenar la lista de workSkillDtos
             {
                 var skillName = await _context.Skills.FirstOrDefaultAsync(s => s.Id == ws.SkillId);
-
                 workSkillDtos.Add(new WorkSkillDto
                 {
                     WorkSkillId = ws.WorkSkillId,
@@ -60,23 +54,16 @@ namespace API_Network.Controllers
             }
             
             return Ok(workSkillDtos);
-        }//end
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkSkill workSkill)
         {
             string msj = "";
-
-            //verifica si ya hay un WorkSkill con los mismos datos
-            bool workSkillExist = _context.WorkSkills.Any(ws => ws.WorkId == workSkill.WorkId && ws.SkillId == workSkill.SkillId);
-
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workSkill.WorkId);
-
-            //verifica que el skillId exista
-            bool skillExiste = _context.Skills.Any(s => s.Id == workSkill.SkillId);
-
+            bool workSkillExist = _context.WorkSkills.Any(ws => ws.WorkId == workSkill.WorkId && ws.SkillId == workSkill.SkillId); //verifica si ya hay un WorkSkill con los mismos datos
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workSkill.WorkId); //verifica que el workId exista
+            bool skillExiste = _context.Skills.Any(s => s.Id == workSkill.SkillId); //verifica que el skillId exista
             try
             {
                 if (!workSkillExist && workExist && skillExiste)
@@ -88,15 +75,14 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -105,14 +91,9 @@ namespace API_Network.Controllers
             string msj = "";
 
             //verifica si ya hay un WorkSkill con los mismos datos
-            bool workSkillExist = _context.WorkSkills.Any(ws => ws.WorkId == workSkill.WorkId && ws.SkillId == workSkill.SkillId);
-
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workSkill.WorkId);
-
-            //verifica que el skillId exista
-            bool skillExiste = _context.Skills.Any(s => s.Id == workSkill.SkillId);
-
+            bool workSkillExist = _context.WorkSkills.Any(ws => ws.WorkId == workSkill.WorkId && ws.SkillId == workSkill.SkillId); //verifica si ya hay un WorkSkill con los mismos datos
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == workSkill.WorkId); //verifica que el workId exista
+            bool skillExiste = _context.Skills.Any(s => s.Id == workSkill.SkillId); //verifica que el skillId exista
             try
             {
                 if (!workSkillExist && workExist && skillExiste)
@@ -124,22 +105,21 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
 
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {
             string msj = "";
-
             try
             {
                 var temp = await _context.WorkSkills.FirstOrDefaultAsync(ws => ws.WorkSkillId == id);
@@ -152,17 +132,16 @@ namespace API_Network.Controllers
                     _context.WorkSkills.Remove(temp);
                     await _context.SaveChangesAsync();
                     msj = $"WorkSkill con el ID {temp.WorkSkillId}, eliminado correctamente";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
-
-    }//end class
-}//end namespace
+        }
+    }
+}
 
 //Un modelo para el consultar con el skillname incluido
 public class WorkSkillDto

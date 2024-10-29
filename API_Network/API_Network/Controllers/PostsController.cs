@@ -26,7 +26,6 @@ namespace API_Network.Controllers
         [HttpGet("ListadoGeneral")]
         public async Task<List<Post>> Listado()
         {
-            //var list = await _context.Posts.ToListAsync();
             var list = await _context.Posts
                 .Include(p => p.WorkProfile)
                 .Select(p => new Post
@@ -64,8 +63,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Aprobados")]
@@ -82,8 +81,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("PorAprobar")]
@@ -100,8 +99,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("ConsultarWorkId")]
@@ -111,9 +110,8 @@ namespace API_Network.Controllers
                              .Where(ws => ws.WorkId == workId)
                              .Include(p => p.WorkProfile) // Incluye WorkProfile
                              .ToListAsync();
-
             return posts;
-        }//end
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
@@ -122,15 +120,14 @@ namespace API_Network.Controllers
             var temp = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
 
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(PostImage post)
         {
             string msj = "";
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId); //verifica que el workId exista
             var imageUrl = "";
             var publicId = "";
 
@@ -140,17 +137,14 @@ namespace API_Network.Controllers
                 {
                     return "No se puede registrar el post sin un recibo de pago válido.";
                 }
-
                 if (workExist)
                 {
                     if (post.PostImageUrl != null)
                     {
                         var result = await _cloudinaryController.SaveImage(post.PostImageUrl, "posts");
-
                         if (result is OkObjectResult okResult)
                         {
                             var uploadResult = okResult.Value as dynamic;
-
                             if (uploadResult != null)
                             {
                                 publicId = uploadResult.PublicId;
@@ -175,7 +169,6 @@ namespace API_Network.Controllers
                         ImagePublicId = publicId,
                         PaymentReceipt = post.PaymentReceipt
                     };
-
                     newPost.Approved = 0;
                     _context.Posts.Add(newPost);
                     _context.SaveChanges();
@@ -185,18 +178,16 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(PostImage post)
         {
             string msj = "Error al editar el post";
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId);
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == post.WorkId); //verifica que el workId exista
             var postExist = _context.Posts.FirstOrDefault(p => p.PostId == post.PostId);
 
             try
@@ -204,10 +195,7 @@ namespace API_Network.Controllers
                 if (post.PostImageUrl != null)
                 {
                     var tempPublicId = postExist.ImagePublicId;
-
                     var result = await _cloudinaryController.SaveImage(post.PostImageUrl, "posts");
-
-
                     if (result is OkObjectResult okResult)
                     {
                         var uploadResult = okResult.Value as dynamic;
@@ -224,15 +212,13 @@ namespace API_Network.Controllers
                     postExist.PostImageUrl = postExist.PostImageUrl ?? "ND";
                     postExist.ImagePublicId = postExist.ImagePublicId ?? "ND";
                 }
-
-                postExist.WorkId= post.WorkId;
-                postExist.ContentPost=post.ContentPost;
+                postExist.WorkId = post.WorkId;
+                postExist.ContentPost = post.ContentPost;
                 postExist.CreateAt = post.CreateAt;
-                //postExist.LikesCount = post.LikesCount;
-                //postExist.CommentsCount = post.CommentsCount;
-                postExist.Approved=post.Approved;
-                postExist.PaymentReceipt=post.PaymentReceipt;
-
+                //postExist.LikesCount = post.LikesCount; //se comenta para que no se reseteen cuando se edita
+                //postExist.CommentsCount = post.CommentsCount; //se comenta para que no se reseteen cuando se edita
+                postExist.Approved = post.Approved;
+                postExist.PaymentReceipt = post.PaymentReceipt;
                 if (workExist)
                 {
                     _context.Posts.Update(postExist);
@@ -243,10 +229,10 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
 
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
@@ -255,10 +241,8 @@ namespace API_Network.Controllers
             string msj;
 
             try
-            {
-                //se eliminan todos los likes relacionados a este post
-                var likes = await _context.Likes.ToListAsync();
-
+            { 
+                var likes = await _context.Likes.ToListAsync(); //se eliminan todos los likes relacionados a este post
                 foreach (var like in likes)
                 {
                     if (like.PostId == postId)
@@ -267,17 +251,11 @@ namespace API_Network.Controllers
                         _context.SaveChanges();
                     }
                 }
-
-                // Buscar el post en la base de datos
-                var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-
-                //se elimina la imagen de cloudinary
-                await _cloudinaryController.DeleteImage(postToDelete.ImagePublicId);
-
-                // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
-                _context.Posts.Remove(postToDelete);
+                var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId); // Buscar el post en la base de datos
+                await _cloudinaryController.DeleteImage(postToDelete.ImagePublicId); //se elimina la imagen de cloudinary
+                _context.Posts.Remove(postToDelete); // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
                 await _context.SaveChangesAsync();
-                msj =$"El PostId: {postToDelete.PostId}, ha sido eliminado correcatamente";
+                msj = $"El PostId: {postToDelete.PostId}, ha sido eliminado correcatamente";
             }
             catch (Exception ex)
             {
@@ -286,5 +264,5 @@ namespace API_Network.Controllers
 
             return msj;
         }
-    }//end class
-}//end namespace
+    }
+}

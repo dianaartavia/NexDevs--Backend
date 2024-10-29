@@ -30,8 +30,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("ConsultarId")]
@@ -47,7 +47,6 @@ namespace API_Network.Controllers
         public async Task<List<CommentData>> ConsultarPost(int postId)
         {
             var commentDataList = new List<CommentData>();
-
             // Obtener comentarios con información de usuario
             var userComments = await (from comment in _context.Comments
                                       join user in _context.Users on comment.UserId equals user.UserId
@@ -91,11 +90,9 @@ namespace API_Network.Controllers
                                           ProfilePictureUrlUser = null, // No hay foto de perfil de usuario
                                           ImagePublicIdUser = null
                                       }).ToListAsync();
-
             // Combinar ambas listas de comentarios
             commentDataList.AddRange(userComments);
             commentDataList.AddRange(workComments);
-
             return commentDataList;
         }
 
@@ -117,7 +114,6 @@ namespace API_Network.Controllers
             {
                 comment.WorkId = null;
             }
-
             try
             {
                 comment.LikesCount = 0;
@@ -129,10 +125,9 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -141,7 +136,6 @@ namespace API_Network.Controllers
             string msj = "";
             try
             {
-
                 _context.Comments.Update(comment);
                 _context.SaveChanges();
                 msj = "Comentario editado correctamente";
@@ -149,26 +143,22 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int commentId)
         {
             string msj = "";
-
             try
             {
                 var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == commentId);
 
                 if (comment != null)
                 {
-                    //se resta el CommentsCount en posts
-                    var posts = await _context.Posts.ToListAsync();
-
+                    var posts = await _context.Posts.ToListAsync(); //se resta el CommentsCount en posts
                     foreach (var post in posts)
                     {
                         if (post.PostId == comment.PostId)
@@ -176,11 +166,8 @@ namespace API_Network.Controllers
                             post.CommentsCount = post.CommentsCount - 1;
                             _context.Posts.Update(post);
                         }
-                    }//end foreach
-
-                    //se eliminan todos los likes relacionados a este comment
-                    var likes = await _context.Likes.ToListAsync();
-
+                    }
+                    var likes = await _context.Likes.ToListAsync(); //se eliminan todos los likes relacionados a este comment
                     foreach (var like in likes)
                     {
                         if (like.CommentId == commentId)
@@ -189,10 +176,8 @@ namespace API_Network.Controllers
                             _context.SaveChanges();
                         }
                     }
-
                     _context.Comments.Remove(comment);
                     _context.SaveChanges();
-
                     msj = $"El comentario: {comment.CommentId}, ha sido eliminado correctamente";
                 }
             }
@@ -201,7 +186,7 @@ namespace API_Network.Controllers
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
+        }
     }
 }
 

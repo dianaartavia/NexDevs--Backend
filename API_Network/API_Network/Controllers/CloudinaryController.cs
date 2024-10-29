@@ -22,7 +22,6 @@ namespace API_Network.Controllers
             try
             {
                 Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
-
                 // Asegurarse de que el archivo ha sido recibido correctamente
                 if (photo == null || photo.Length == 0)
                 {
@@ -39,20 +38,12 @@ namespace API_Network.Controllers
                         Overwrite = true,
                         Folder = folder
                     };
-
-
-                    // Subir la imagen a Cloudinary
-                    var uploadResult = await cloudinary.UploadAsync(uploadParams);
-
-                    // Verificar si la subida fue exitosa
-                    if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+                    var uploadResult = await cloudinary.UploadAsync(uploadParams); // Subir la imagen a Cloudinary
+                    if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK) // Verificar si la subida fue exitosa
                     {
-                        // Extraer PublicId y URL de la imagen subida
-                        var publicId = uploadResult.PublicId;
+                        var publicId = uploadResult.PublicId;// Extraer PublicId y URL de la imagen subida
                         var url = uploadResult.SecureUrl.ToString();
-
-                        // Devolver una respuesta con PublicId y URL
-                        return Ok(new { PublicId = publicId, Url = url });
+                        return Ok(new { PublicId = publicId, Url = url });// Devolver una respuesta con PublicId y URL
                     }
                     else
                     {
@@ -65,9 +56,6 @@ namespace API_Network.Controllers
                 return BadRequest($"Error: {ex.Message}");
             }
         }
-
-        // [HttpDelete]
-        // [Route("delete")]
         public async Task<IActionResult> DeleteImage(string publicId)
         {
             try
@@ -83,38 +71,5 @@ namespace API_Network.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-        // [HttpPut]
-        // [Route("edit")]
-        //public async Task<IActionResult> EditImage(string publicId, IFormFile photo, string folder)
-        //{
-        //    try
-        //    {
-        //        Cloudinary cloudinary = new Cloudinary(_cloudinaryUrl);
-
-        //        // Verificar si el archivo es nulo o tiene un tamaño inválido
-        //        if (photo == null || photo.Length == 0)
-        //        {
-        //            return BadRequest("No se proporcionó una imagen válida.");
-        //        }
-
-        //        // Eliminar la imagen anterior de Cloudinary
-        //        var deleteParams = new DeletionParams(publicId);
-        //        var deleteResult = await cloudinary.DestroyAsync(deleteParams);
-        //        if (deleteResult.Result != "ok")
-        //        {
-        //            return BadRequest("No se pudo eliminar la imagen anterior.");
-        //        }
-
-        //        // Subir la nueva imagen
-        //        var uploadResult = await this.SaveImage(photo, folder);
-        //        return Ok(uploadResult);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
     }
 }

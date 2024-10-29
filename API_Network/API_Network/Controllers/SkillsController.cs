@@ -30,8 +30,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
@@ -40,17 +40,14 @@ namespace API_Network.Controllers
             var temp = await _context.Skills.FirstOrDefaultAsync(s=>s.Id == skillId);
 
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Skill skill)
         {
             string msj = "";
-
-            //verifica si ya hay una Skill con los mismos datos
-            bool skillExist = _context.Skills.Any(s => s.Id == skill.Id);
-
+            bool skillExist = _context.Skills.Any(s => s.Id == skill.Id); //verifica si ya hay una Skill con los mismos datos
             try
             {
                 if (!skillExist)
@@ -62,25 +59,21 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
         public string Editar(Skill skill)
         {
             string msj = "";
-
-            //verifica si ya hay una Skill con los mismos datos
             bool skillExist = _context.Skills.Any(s => s.SkillName == skill.SkillName);
-
             try
             {
                 if (!skillExist)
@@ -92,38 +85,33 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = "Esos datos ya existen o son incorrectos";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
 
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {
             string msj = "";
-
             try
             {
                 var data = await _context.Skills.FirstOrDefaultAsync(s => s.Id == id);
-
                 var listWorkSkills = await _context.WorkSkills.ToListAsync();
-
-                //se busca si en la tabla workSkill todos los datos relacionados a la skill y se eliminan
-                foreach (var ws in listWorkSkills)
+                foreach (var ws in listWorkSkills) //se busca si en la tabla workSkill todos los datos relacionados a la skill y se eliminan
                 {
                     if (ws.SkillId == data.Id)
                     {
                         _context.WorkSkills.Remove(ws);
                         _context.SaveChanges();
                     }
-                }//end foreach
-
+                }
                 _context.Skills.Remove(data);
                 _context.SaveChanges();
                 msj = $"La skill: {data.SkillName}, ha sido eliminada correctamente";
@@ -133,7 +121,6 @@ namespace API_Network.Controllers
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
-
+        }
     }
 }

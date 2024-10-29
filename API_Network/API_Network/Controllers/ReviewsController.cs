@@ -29,8 +29,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
@@ -39,7 +39,7 @@ namespace API_Network.Controllers
             var temp = await _context.Reviews.FirstOrDefaultAsync(r => r.ReviewId == reviewId);
 
             return temp;
-        }//end consultar 
+        }
 
         //[Authorize]
         [HttpGet("ConsultarWorkId")]
@@ -60,20 +60,16 @@ namespace API_Network.Controllers
                                      ProfilePictureUrlUser = user.ProfilePictureUrl,
                                      ImagePublicId = user.ImagePublicId
                                  }).ToListAsync();
-
-            // Retornar la lista con los resultados
-            return reviews;
-        }//end ConsultarId
+            return reviews; // Retornar la lista con los resultados
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Review review)
         {
             string msj = "";
-
             try
             {
-
                 _context.Reviews.Add(review);
                 _context.SaveChanges();
                 msj = "Review registrada correctamente";
@@ -81,10 +77,9 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -93,7 +88,6 @@ namespace API_Network.Controllers
             string msj = "";
             try
             {
-
                 _context.Reviews.Update(review);
                 _context.SaveChanges();
                 msj = "Review editada correctamente";
@@ -101,21 +95,18 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
-
+            }
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int reviewId)
         {
             string msj = "";
-
             try
             {
                 var review = await _context.Reviews.FirstOrDefaultAsync(r => r.ReviewId == reviewId);
-
                 if (review != null)
                 {
                     _context.Reviews.Remove(review);
@@ -128,7 +119,6 @@ namespace API_Network.Controllers
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
-
+        }
     }
 }

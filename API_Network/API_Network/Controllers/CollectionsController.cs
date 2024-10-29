@@ -12,7 +12,6 @@ namespace API_Network.Controllers
     {
         private readonly DbContextNetwork _context;
         private readonly CloudinaryController _cloudinaryController;
-
         public CollectionsController(DbContextNetwork cContext, CloudinaryController cloudinaryController)
         {
             _context = cContext;
@@ -32,8 +31,8 @@ namespace API_Network.Controllers
             else
             {
                 return list;
-            }//end if/else
-        }//end Listado
+            }
+        }
 
         //[Authorize]
         [HttpGet("Consultar")]
@@ -41,7 +40,7 @@ namespace API_Network.Controllers
         {
             var temp = await _context.Collections.Where(c => c.WorkId == workId).ToListAsync();
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpGet("ConsultarId")]
@@ -49,15 +48,14 @@ namespace API_Network.Controllers
         {
             var temp = await _context.Collections.FirstOrDefaultAsync(c => c.CollectionId == collectionId);
             return temp;
-        }//end Consultar
+        }
 
         //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(CollectionImage collection)
         {
             string msj = "";
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId);
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId); //verifica que el workId exista
             var imageUrl = "";
             var publicId = "";
 
@@ -67,14 +65,10 @@ namespace API_Network.Controllers
                 {
                     if (collection.CollectionImageUrl != null)
                     {
-                        // Llamar al método de subida de imagen
-                        var result = await _cloudinaryController.SaveImage(collection.CollectionImageUrl, "collection");
-
+                        var result = await _cloudinaryController.SaveImage(collection.CollectionImageUrl, "collection");// Llamar al método de subida de imagen
                         if (result is OkObjectResult okResult)
                         {
-                            // Extraer los valores de la respuesta
-                            var uploadResult = okResult.Value as dynamic;
-
+                            var uploadResult = okResult.Value as dynamic;// Extraer los valores de la respuesta
                             if (uploadResult != null)
                             {
                                 publicId = uploadResult.PublicId;
@@ -108,10 +102,10 @@ namespace API_Network.Controllers
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
 
             return msj;
-        }//end Agregar
+        }
 
         //[Authorize]
         [HttpPut("Editar")]
@@ -119,19 +113,14 @@ namespace API_Network.Controllers
         {
             string msj = "Error al editar";
             var collectionExist = _context.Collections.FirstOrDefault(c => c.CollectionId == collection.CollectionId);
-
-            //verifica que el workId exista
-            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId);
+            bool workExist = _context.WorkProfiles.Any(wp => wp.WorkId == collection.WorkId); //verifica que el workId exista
 
             try
             {
                 if (collection.CollectionImageUrl != null)
                 {
                     var tempPublicId = collectionExist.ImagePublicId;
-
                     var result = await _cloudinaryController.SaveImage(collection.CollectionImageUrl, "collection");
-
-
                     if (result is OkObjectResult okResult)
                     {
                         var uploadResult = okResult.Value as dynamic;
@@ -160,22 +149,21 @@ namespace API_Network.Controllers
                 else
                 {
                     msj = $"El workId {collection.WorkId}, no existe";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-            }//end
+            }
 
             return msj;
-        }//end Editar
+        }
 
         //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {
             string msj = "";
-
             try
             {
                 var data = await _context.Collections.FirstOrDefaultAsync(c => c.CollectionId == id);
@@ -185,20 +173,17 @@ namespace API_Network.Controllers
                 }
                 else
                 {
-                    //se elimina la imagen de cloudinary
-                    await _cloudinaryController.DeleteImage(data.ImagePublicId);
-
+                    await _cloudinaryController.DeleteImage(data.ImagePublicId); //se elimina la imagen de cloudinary
                     _context.Collections.Remove(data);
                     await _context.SaveChangesAsync();
                     msj = $"Collection con el ID {data.CollectionId}, eliminado correctamente";
-                }//end else
+                }
             }
             catch (Exception ex)
             {
                 msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
             }
             return msj;
-        }//end Eliminar
-
+        }
     }
-}//end namespace
+}
