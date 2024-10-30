@@ -8,7 +8,7 @@ namespace API_Network.Models
     public class EmailRestablecer
     {
         //metodo para enviar el email
-        public void Enviar (String correo, string workId)
+        public void Enviar (String correo, string token)
         {
             try
             {
@@ -19,7 +19,7 @@ namespace API_Network.Models
                 email.To.Add(new MailAddress(correo)); //destinatario
                 email.From = new MailAddress("networkapp.noreply@gmail.com"); //emisor
                 htmlBody = htmlBody.Replace("{{Email}}", correo) //html para el body del email
-                    .Replace("{{workId}}", workId);
+                    .Replace("{{Token}}", token);
                 email.IsBodyHtml = true; //indicar que el contenido es en html
                 email.Priority = MailPriority.Normal; //prioridad
                 //instanciar la vista del html para el body del email
