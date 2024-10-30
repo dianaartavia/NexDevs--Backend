@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using API_Network.Helpers;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 
 namespace API_Network.Controllers
@@ -17,12 +21,14 @@ namespace API_Network.Controllers
         private readonly DbContextNetwork _context;
         private readonly IAutorizacionServicesWorkProfile autorizacionServices;
         private readonly CloudinaryController _cloudinaryController;
+        private readonly IConfiguration _config;
 
-        public WorkProfileController(DbContextNetwork wpContext, IAutorizacionServicesWorkProfile autorizacionServices, CloudinaryController cloudinaryController)
+        public WorkProfileController(DbContextNetwork wpContext, IAutorizacionServicesWorkProfile autorizacionServices, CloudinaryController cloudinaryController, IConfiguration config)
         {
             _context = wpContext;
             this.autorizacionServices = autorizacionServices;
             _cloudinaryController = cloudinaryController;
+            _config = config;
 
         }
         // [Authorize]
@@ -225,8 +231,10 @@ namespace API_Network.Controllers
             if (emailExist)
             {
                 WorkProfile workProfile = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
+
+                var token = GenerarTokenRestablecimiento(email, workProfile.WorkId.ToString(), workProfile.ProfileType.ToString());
                 //enviar email
-                await EnviarEmail(email, workProfile.WorkId.ToString());
+                await EnviarEmail(email, token);
                 msj = "Correo enviado";
             }
             else
@@ -235,6 +243,31 @@ namespace API_Network.Controllers
             }
             return msj;
         }
+
+        private string GenerarTokenRestablecimiento(string email, string workId, string profileType)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+        new Claim(JwtRegisteredClaimNames.Sub, email),
+        new Claim("workId", workId.ToString()),
+        new Claim("profileType", profileType),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+            var token = new JwtSecurityToken(
+                issuer: "NetworkApp",
+                audience: "NetworkAppUsers",
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1), // El token expira en una hora
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
 
         [HttpPost("NuevaContraseña")]
         public async Task<string> NuevaContraseña(string workId, string password, string confirmarPassword)
@@ -262,7 +295,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        private async Task<bool> EnviarEmail(String email, string workId)
+        private async Task<bool> EnviarEmail(String email, string token)
         {
             string mensaje = "";
             bool enviado = false;
@@ -270,7 +303,7 @@ namespace API_Network.Controllers
             try
             {
                 EmailRestablecer emailRestablecer = new EmailRestablecer();
-                emailRestablecer.Enviar(email, workId);
+                emailRestablecer.Enviar(email, token);
                 enviado = true;
                 return enviado;
             }

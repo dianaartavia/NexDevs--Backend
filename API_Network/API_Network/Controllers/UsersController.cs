@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using API_Network.Helpers;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 
 namespace API_Network.Controllers
@@ -18,12 +22,14 @@ namespace API_Network.Controllers
         private readonly IAutorizacionServicesUser autorizacionServices;
 
         private readonly CloudinaryController _cloudinaryController;
+        private readonly IConfiguration _config;
 
-        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices, CloudinaryController cloudinaryController)
+        public UsersController(DbContextNetwork uContext, IAutorizacionServicesUser autorizacionServices, CloudinaryController cloudinaryController, IConfiguration config)
         {
             _context = uContext;
             this.autorizacionServices = autorizacionServices;
             _cloudinaryController = cloudinaryController;
+            _config = config;
         }
 
         // [Authorize]
@@ -209,8 +215,10 @@ namespace API_Network.Controllers
             if (emailExist)
             {
                 User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+                var token = GenerarTokenRestablecimiento(email, user.UserId.ToString(), user.ProfileType.ToString());
                 //Se envía el correo con el link para restablecer la contraseña
-                await EnviarEmail(email, user.UserId.ToString());
+                await EnviarEmail(email, token);
                 msj = "Correo enviado";
             }
             else
@@ -218,6 +226,30 @@ namespace API_Network.Controllers
                 msj = "Este correo no se encuentra registrado";
             }
             return msj;
+        }
+
+        private string GenerarTokenRestablecimiento(string email, string userId, string profileType)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+        new Claim(JwtRegisteredClaimNames.Sub, email),
+        new Claim("userId", userId.ToString()),
+        new Claim("profileType", profileType),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+            var token = new JwtSecurityToken(
+                issuer: "NetworkApp",
+                audience: "NetworkAppUsers",
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1), // El token expira en una hora
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         [HttpPost("NuevaContraseña")]
@@ -245,7 +277,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        private async Task<bool> EnviarEmail(String email, string userId)
+        private async Task<bool> EnviarEmail(String email, string token)
         {
             string mensaje = "";
             bool enviado = false;
@@ -253,7 +285,7 @@ namespace API_Network.Controllers
             try
             {
                 EmailRestablecer emailRestablecer = new EmailRestablecer();
-                emailRestablecer.Enviar(email, userId);
+                emailRestablecer.Enviar(email, token);
                 enviado = true;
                 return enviado;
             }
