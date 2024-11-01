@@ -57,6 +57,38 @@ namespace API_Network.Controllers
         }
 
         //[Authorize]
+        [HttpGet("ConsultarCategory")]
+        public async Task<ActionResult<List<WorkCategoryDto>>> ConsultarCategory(int categoryId)
+        {
+            // Obtener los trabajadores asociados a la categoria
+            var workCategories = await _context.WorkCategories
+                                            .Where(c => c.CategoryId == categoryId)
+                                            .ToListAsync();
+
+            var workCategory = new List<CategoryWithWorker>();
+            foreach (var wc in workCategories)
+            {
+                var categoryName = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == wc.CategoryId);
+                var worker = await _context.WorkProfiles.FirstOrDefaultAsync(w => w.WorkId == wc.WorkId);
+                workCategory.Add(new CategoryWithWorker
+                {
+                    id = wc.Id,
+                    CategoryId = wc.CategoryId,
+                    CategoryName = categoryName.CategoryName,
+                    WorkId = wc.WorkId,
+                    Name = worker.Name,
+                    Number = worker.Number,
+                    Province = worker.Province,
+                    City = worker.City,
+                    WorkDescription = worker.WorkDescription,
+                    ProfilePictureUrl = worker.ProfilePictureUrl,
+                    ImagePublicId = worker.ImagePublicId
+                });
+            }
+            return Ok(workCategory);
+        }
+
+        //[Authorize]
         [HttpGet("ConsultarId")]
         public async Task<ActionResult<WorkCategory>> ConsultarPorId(int id)
         {
@@ -155,4 +187,20 @@ public class WorkCategoryDto
     public int WorkId { get; set; }
     public int CategoryId { get; set; }
     public string CategoryName { get; set; }
+}
+
+public class CategoryWithWorker
+{
+    public int id { get; set; }
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; }
+    public int WorkId { get; set; }
+    public string Name { get; set; }
+    public string Number { get; set; }
+    public string Province { get; set; }
+    public string City { get; set; }
+    public string WorkDescription { get; set; }
+    public string ProfilePictureUrl { get; set; }
+    public string ImagePublicId { get; set; }
+
 }
