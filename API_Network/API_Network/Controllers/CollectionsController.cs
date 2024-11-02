@@ -50,7 +50,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(CollectionImage collection)
         {
@@ -107,7 +107,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public async Task<string> EditarAsync(CollectionImage collection)
         {
@@ -159,7 +159,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

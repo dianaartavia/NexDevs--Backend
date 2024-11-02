@@ -96,7 +96,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkCategory workCategory)
         {
@@ -124,7 +124,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public string Editar(WorkCategory workCategory)
         {
@@ -152,7 +152,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {
