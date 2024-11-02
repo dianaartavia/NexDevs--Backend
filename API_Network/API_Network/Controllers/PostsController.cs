@@ -241,7 +241,7 @@ namespace API_Network.Controllers
             string msj;
 
             try
-            { 
+            {
                 var likes = await _context.Likes.ToListAsync(); //se eliminan todos los likes relacionados a este post
                 foreach (var like in likes)
                 {
@@ -251,6 +251,17 @@ namespace API_Network.Controllers
                         _context.SaveChanges();
                     }
                 }
+
+                var comments = await _context.Comments.ToListAsync();
+                foreach (var comment in comments)
+                {
+                    if (comment.PostId == postId)
+                    { 
+                        _context.Comments.Remove(comment);
+                        _context.SaveChanges();
+                    }
+                }
+
                 var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId); // Buscar el post en la base de datos
                 await _cloudinaryController.DeleteImage(postToDelete.ImagePublicId); //se elimina la imagen de cloudinary
                 _context.Posts.Remove(postToDelete); // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
