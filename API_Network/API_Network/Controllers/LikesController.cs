@@ -356,5 +356,26 @@ namespace API_Network.Controllers
 
             return Ok(msj);
         }
+
+        [HttpGet("LikedItems")]
+        public async Task<IActionResult> GetLikedItems(int? userId = null, int? workProfileId = null)
+        {
+            if (userId == null && workProfileId == null)
+            {
+                return BadRequest("Se debe proporcionar un UserId o WorkProfileId.");
+            }
+
+            // Obtener los IDs de Post y Comment likeados por el usuario o perfil de trabajo
+            var likedItems = await _context.Likes
+                .Where(like => (like.UserId == userId || like.WorkProfileId == workProfileId))
+                .Select(like => new {
+                    PostId = like.PostId,
+                    CommentId = like.CommentId
+                })
+                .ToListAsync();
+
+            return Ok(likedItems);
+        }
+
     }
 }
