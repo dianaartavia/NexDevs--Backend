@@ -1,5 +1,6 @@
 using API_Network.Context;
 using API_Network.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,7 +64,7 @@ namespace API_Network.Controllers
             return reviews; // Retornar la lista con los resultados
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Review review)
         {
@@ -81,7 +82,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public string Editar(Review review)
         {
@@ -99,7 +100,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int reviewId)
         {

@@ -1,5 +1,6 @@
 ﻿using API_Network.Context;
 using API_Network.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
@@ -43,7 +44,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(CategoryImage category)
         {
@@ -100,6 +101,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
+        [Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(CategoryImage category)
         {
@@ -145,53 +147,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-
-        //[HttpPut("Editar")]
-        //public async Task<string> EditarAsync(CategoryImage category)
-        //{
-        //    string msj = "Error al editar la categoria";
-        //    var categoryExist = _context.Categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
-        //    try
-        //    {
-        //        if (category.CategoryImageUrl != null)
-        //        {
-        //            var tempPublicId = categoryExist.ImagePublicId;
-
-        //            var result = await _cloudinaryController.SaveImage(category.CategoryImageUrl, "categories");
-
-
-        //            if (result is OkObjectResult okResult)
-        //            {
-        //                var uploadResult = okResult.Value as dynamic;
-        //                if (uploadResult != null)
-        //                {
-        //                    await _cloudinaryController.DeleteImage(tempPublicId);
-        //                    categoryExist.CategoryImageUrl = uploadResult.Url;
-        //                    categoryExist.ImagePublicId = uploadResult.PublicId;
-        //                }
-        //            }
-        //        }
-        //        else if (category.CategoryImageUrl == null)
-        //        {
-        //            categoryExist.CategoryImageUrl = "ND";
-        //            categoryExist.ImagePublicId = "ND";
-        //        }
-
-        //        categoryExist.CategoryName = category.CategoryName;
-
-        //        _context.Categories.Update(categoryExist);
-        //        _context.SaveChanges();
-        //        msj = "Categoria editada correctamente";
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        msj = $"Error: {ex.Message} {ex.InnerException.ToString()}";
-        //    }//end
-
-        //    return msj;
-        //}//end Editar
-
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int categoryId)
         {

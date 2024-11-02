@@ -45,13 +45,13 @@ namespace API_Network.Controllers
                         Name = p.WorkProfile.Name,
                         Email = p.WorkProfile.Email,
                         Number = p.WorkProfile.Number,
-                        Password = p.WorkProfile.Password,
+                        Password = "ND",
                         Province = p.WorkProfile.Province,
                         City = p.WorkProfile.City,
                         WorkDescription = p.WorkProfile.WorkDescription,
                         ProfilePictureUrl = p.WorkProfile.ProfilePictureUrl,
                         ProfileType = p.WorkProfile.ProfileType,
-                        Salt = p.WorkProfile.Salt
+                        Salt = "ND"
                     }
                 })
                 .ToListAsync();
@@ -122,7 +122,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(PostImage post)
         {
@@ -135,7 +135,7 @@ namespace API_Network.Controllers
             {
                 if (post.PaymentReceipt <= 0)
                 {
-                    return "No se puede registrar el post sin un recibo de pago válido.";
+                    return "No se puede registrar el post sin un recibo de pago vï¿½lido.";
                 }
                 if (workExist)
                 {
@@ -182,7 +182,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(PostImage post)
         {
@@ -234,7 +234,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int postId)
         {

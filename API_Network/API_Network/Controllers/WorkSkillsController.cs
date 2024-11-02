@@ -57,6 +57,15 @@ namespace API_Network.Controllers
         }
 
         //[Authorize]
+        [HttpGet("ConsultarId")]
+        public async Task<WorkSkill>ConsultarId(int workSkillId)
+        {
+            var workSkill = await _context.WorkSkills.FirstOrDefaultAsync(ws => ws.WorkSkillId == workSkillId);
+           
+            return workSkill;
+        }
+
+        [Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkSkill workSkill)
         {
@@ -84,7 +93,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public string Editar(WorkSkill workSkill)
         {
@@ -115,7 +124,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

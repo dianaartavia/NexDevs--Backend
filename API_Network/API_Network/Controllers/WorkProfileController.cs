@@ -35,7 +35,21 @@ namespace API_Network.Controllers
         [HttpGet("Listado")]
         public async Task<List<WorkProfile>> Listado()
         {
-            var list = await _context.WorkProfiles.ToListAsync();
+            var list = await _context.WorkProfiles
+            .Select(w=> new WorkProfile{
+                WorkId = w.WorkId,
+                        Name = w.Name,
+                        Email = w.Email,
+                        Number = w.Number,
+                        Password = "ND",
+                        Province = w.Province,
+                        City = w.City,
+                        WorkDescription = w.WorkDescription,
+                        ProfilePictureUrl = w.ProfilePictureUrl,
+                        ProfileType = w.ProfileType,
+                        Salt = "ND"
+            })
+            .ToListAsync();
             if (list == null)
             {
                 return new List<WorkProfile>();
@@ -137,7 +151,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public async Task<string> EditarAsync(WorkProfileImage workProfile)
         {
@@ -189,7 +203,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
         {
