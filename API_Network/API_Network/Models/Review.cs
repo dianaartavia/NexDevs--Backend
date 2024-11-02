@@ -11,6 +11,7 @@ namespace API_Network.Models
         public int UserId { get; set; }
 
         public int WorkId { get; set; }
+        public int Rating { get; set; }
 
         public string ReviewComment { get; set; }
 

@@ -8,6 +8,7 @@ namespace API_Network.Models
         public int ReviewId { get; set; }
         public int WorkId { get; set; }
         public string ReviewComment { get; set; }
+        public int Rating { get; set; }
         public DateTime CreateAt { get; set; }
         public int UserId { get; set; }
         public string FirstName { get; set; }

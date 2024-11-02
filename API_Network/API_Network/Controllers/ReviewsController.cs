@@ -54,6 +54,7 @@ namespace API_Network.Controllers
                                      ReviewId = review.ReviewId,
                                      WorkId = review.WorkId,
                                      ReviewComment = review.ReviewComment,
+                                     Rating = review.Rating,
                                      CreateAt = review.CreateAt,
                                      UserId = user.UserId,
                                      FirstName = user.FirstName,
