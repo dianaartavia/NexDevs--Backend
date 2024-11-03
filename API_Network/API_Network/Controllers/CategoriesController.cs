@@ -19,7 +19,7 @@ namespace API_Network.Controllers
             _cloudinaryController = cloudinaryController;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<Category>> Listado()
         {
@@ -35,7 +35,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<Category> Consultar(int categoryId)
         {
@@ -44,7 +44,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        ////[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(CategoryImage category)
         {
@@ -101,7 +101,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        ////[Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(CategoryImage category)
         {
@@ -147,7 +147,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        ////[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int categoryId)
         {

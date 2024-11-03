@@ -18,7 +18,7 @@ namespace API_Network.Controllers
             _cloudinaryController = cloudinaryController;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<Collection>> Listado()
         {
@@ -34,7 +34,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<List<Collection>> Consultar(int workId)
         {
@@ -42,7 +42,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarId")]
         public async Task<Collection> ConsultarCollectionId(int collectionId)
         {
@@ -50,7 +50,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(CollectionImage collection)
         {
@@ -107,7 +107,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public async Task<string> EditarAsync(CollectionImage collection)
         {
@@ -159,7 +159,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

@@ -17,7 +17,7 @@ namespace API_Network.Controllers
             _context = context;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<Review>> Listado()
         {
@@ -33,7 +33,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<Review> ConsultarId(int reviewId)
         {
@@ -42,7 +42,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarWorkId")]
         public async Task<List<ReviewUserData>> ConsultarWorkId(int workId)
         {
@@ -65,7 +65,7 @@ namespace API_Network.Controllers
             return reviews; // Retornar la lista con los resultados
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Review review)
         {
@@ -83,7 +83,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public string Editar(Review review)
         {
@@ -101,7 +101,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int reviewId)
         {

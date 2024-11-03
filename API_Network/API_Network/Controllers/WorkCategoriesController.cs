@@ -17,7 +17,7 @@ namespace API_Network.Controllers
             _context = wcContext;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkCategory>> Listado()
         {
@@ -33,7 +33,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<ActionResult<List<WorkCategoryDto>>> Consultar(int workId)
         {
@@ -56,7 +56,7 @@ namespace API_Network.Controllers
             return Ok(workCategoryDtos);
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarCategory")]
         public async Task<ActionResult<List<WorkCategoryDto>>> ConsultarCategory(int categoryId)
         {
@@ -88,7 +88,7 @@ namespace API_Network.Controllers
             return Ok(workCategory);
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarId")]
         public async Task<ActionResult<WorkCategory>> ConsultarPorId(int id)
         {
@@ -96,7 +96,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkCategory workCategory)
         {
@@ -124,7 +124,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public string Editar(WorkCategory workCategory)
         {
@@ -152,7 +152,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

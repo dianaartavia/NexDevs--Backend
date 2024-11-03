@@ -16,7 +16,7 @@ namespace API_Network.Controllers
         {
             _context = wsContext;
         }
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkSkill>> Listado()
         {
@@ -32,7 +32,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<ActionResult<List<WorkSkillDto>>> Consultar(int workId)
         {
@@ -56,7 +56,7 @@ namespace API_Network.Controllers
             return Ok(workSkillDtos);
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarId")]
         public async Task<WorkSkill>ConsultarId(int workSkillId)
         {
@@ -65,7 +65,7 @@ namespace API_Network.Controllers
             return workSkill;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(WorkSkill workSkill)
         {
@@ -93,7 +93,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public string Editar(WorkSkill workSkill)
         {
@@ -124,7 +124,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

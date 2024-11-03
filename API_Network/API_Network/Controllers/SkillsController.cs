@@ -17,7 +17,7 @@ namespace API_Network.Controllers
             _context = sContext;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<Skill>> Listado()
         {
@@ -33,7 +33,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<Skill> Consultar(int skillId)
         {
@@ -42,7 +42,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public string Agregar(Skill skill)
         {
@@ -68,7 +68,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public string Editar(Skill skill)
         {
@@ -95,7 +95,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int id)
         {

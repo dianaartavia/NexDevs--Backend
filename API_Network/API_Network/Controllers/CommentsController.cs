@@ -18,7 +18,7 @@ namespace API_Network.Controllers
             _context = context;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Listado")]
         public async Task<List<Comment>> Listado()
         {
@@ -34,7 +34,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarId")]
         public async Task<Comment> Consultar(int commentId)
         {
@@ -43,7 +43,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarPorPost")]
         public async Task<List<CommentData>> ConsultarPost(int postId)
         {
@@ -97,7 +97,7 @@ namespace API_Network.Controllers
             return commentDataList;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(Comment comment)
         {
@@ -130,7 +130,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public string Editar(Comment comment)
         {
@@ -148,7 +148,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int commentId)
         {

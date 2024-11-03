@@ -31,7 +31,7 @@ namespace API_Network.Controllers
             _config = config;
 
         }
-        // [Authorize]
+        // //[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkProfile>> Listado()
         {
@@ -135,7 +135,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("BuscarEmail")]
         public async Task<WorkProfile> Consultar(string email)
         {
@@ -143,7 +143,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("BuscarID")]
         public async Task<ActionResult<WorkProfile>> ConsultarID(int id)
         {
@@ -151,7 +151,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public async Task<string> EditarAsync(WorkProfileImage workProfile)
         {
@@ -203,7 +203,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
         {

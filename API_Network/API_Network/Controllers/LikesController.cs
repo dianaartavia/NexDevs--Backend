@@ -33,7 +33,7 @@ namespace API_Network.Controllers
             return likeExists;
         } 
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("LikePost")]
         public async Task<string> LikePost(LikePost likePost)
         {
@@ -136,7 +136,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("LikeComment")]
         public async Task<string> LikeComment(LikeComment likeComment)
         {
@@ -230,7 +230,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("DislikePost")]
         public async Task<IActionResult> DislikePost(LikePost likePost)
         {
@@ -292,7 +292,7 @@ namespace API_Network.Controllers
             return Ok(msj);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("DislikeComment")]
         public async Task<IActionResult> DislikeComment(LikeComment likeComment)
         {

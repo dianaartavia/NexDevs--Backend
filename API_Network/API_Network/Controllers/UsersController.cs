@@ -32,7 +32,7 @@ namespace API_Network.Controllers
             _config = config;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("Listado")]
         public async Task<List<User>> Listado()
         {
@@ -121,7 +121,7 @@ namespace API_Network.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("BuscarEmail")]
         public async Task<User> Consultar(string email)
         {
@@ -129,7 +129,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(UserImage user)
         {
@@ -181,7 +181,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(string email)
         {

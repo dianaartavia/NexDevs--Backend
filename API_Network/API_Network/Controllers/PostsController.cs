@@ -22,7 +22,7 @@ namespace API_Network.Controllers
             _cloudinaryController = cloudinaryController;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ListadoGeneral")]
         public async Task<List<Post>> Listado()
         {
@@ -66,7 +66,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Aprobados")]
         public async Task<List<Post>> ListaAprobados()
         {
@@ -84,7 +84,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("PorAprobar")]
         public async Task<List<Post>> ListaPendientes()
         {
@@ -102,7 +102,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("ConsultarWorkId")]
         public async Task<ActionResult<List<Post>>> ConsultarWorkId(int workId)
         {
@@ -113,7 +113,7 @@ namespace API_Network.Controllers
             return posts;
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("Consultar")]
         public async Task<Post> Consultar(int postId)
         {
@@ -122,7 +122,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(PostImage post)
         {
@@ -181,8 +181,8 @@ namespace API_Network.Controllers
             }
             return msj;
         }
-
-        [Authorize]
+        
+        ////[Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(PostImage post)
         {
@@ -234,7 +234,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        [Authorize]
+        ////[Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int postId)
         {
