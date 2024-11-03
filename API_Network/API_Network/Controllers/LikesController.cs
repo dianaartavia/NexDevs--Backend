@@ -356,7 +356,6 @@ namespace API_Network.Controllers
 
             return Ok(msj);
         }
-
         [HttpGet("LikedItems")]
         public async Task<IActionResult> GetLikedItems(int? userId = null, int? workProfileId = null)
         {
@@ -365,12 +364,35 @@ namespace API_Network.Controllers
                 return BadRequest("Se debe proporcionar un UserId o WorkProfileId.");
             }
 
-            // Obtener los IDs de Post y Comment likeados por el usuario o perfil de trabajo
             var likedItems = await _context.Likes
-                .Where(like => (like.UserId == userId || like.WorkProfileId == workProfileId))
-                .Select(like => new {
-                    PostId = like.PostId,
-                    CommentId = like.CommentId
+                .Include(like => like.Post)
+                .ThenInclude(post => post.WorkProfile)
+                .Include(like => like.Comment)
+                .Where(like => like.UserId == userId || like.WorkProfileId == workProfileId)
+                .Select(like => new
+                {
+                        like.Post.PostId,
+                        like.Post.WorkId,
+                        like.Post.ContentPost,
+                        like.Post.PaymentReceipt,
+                        like.Post.PostImageUrl,
+                        like.Post.CreateAt,
+                        like.Post.LikesCount,
+                        like.Post.CommentsCount,
+                        like.Post.Approved,
+                        WorkProfile = new
+                        {
+                            like.Post.WorkProfile.WorkId,
+                            like.Post.WorkProfile.Name,
+                            like.Post.WorkProfile.Email,
+                            like.Post.WorkProfile.Number,
+                            like.Post.WorkProfile.Province,
+                            like.Post.WorkProfile.City,
+                            like.Post.WorkProfile.WorkDescription,
+                            like.Post.WorkProfile.ProfilePictureUrl,
+                            like.Post.WorkProfile.ProfileType
+                        }
+   
                 })
                 .ToListAsync();
 
