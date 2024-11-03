@@ -45,13 +45,13 @@ namespace API_Network.Controllers
                         Name = p.WorkProfile.Name,
                         Email = p.WorkProfile.Email,
                         Number = p.WorkProfile.Number,
-                        Password = p.WorkProfile.Password,
+                        Password = "ND",
                         Province = p.WorkProfile.Province,
                         City = p.WorkProfile.City,
                         WorkDescription = p.WorkProfile.WorkDescription,
                         ProfilePictureUrl = p.WorkProfile.ProfilePictureUrl,
                         ProfileType = p.WorkProfile.ProfileType,
-                        Salt = p.WorkProfile.Salt
+                        Salt = "ND"
                     }
                 })
                 .ToListAsync();
@@ -122,7 +122,7 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("Agregar")]
         public async Task<string> Agregar(PostImage post)
         {
@@ -135,7 +135,7 @@ namespace API_Network.Controllers
             {
                 if (post.PaymentReceipt <= 0)
                 {
-                    return "No se puede registrar el post sin un recibo de pago válido.";
+                    return "No se puede registrar el post sin un recibo de pago vï¿½lido.";
                 }
                 if (workExist)
                 {
@@ -182,7 +182,7 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("Editar")]
         public async Task<string> Editar(PostImage post)
         {
@@ -234,14 +234,14 @@ namespace API_Network.Controllers
             return msj;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("Eliminar")]
         public async Task<string> Eliminar(int postId)
         {
             string msj;
 
             try
-            { 
+            {
                 var likes = await _context.Likes.ToListAsync(); //se eliminan todos los likes relacionados a este post
                 foreach (var like in likes)
                 {
@@ -251,6 +251,17 @@ namespace API_Network.Controllers
                         _context.SaveChanges();
                     }
                 }
+
+                var comments = await _context.Comments.ToListAsync();
+                foreach (var comment in comments)
+                {
+                    if (comment.PostId == postId)
+                    { 
+                        _context.Comments.Remove(comment);
+                        _context.SaveChanges();
+                    }
+                }
+
                 var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId); // Buscar el post en la base de datos
                 await _cloudinaryController.DeleteImage(postToDelete.ImagePublicId); //se elimina la imagen de cloudinary
                 _context.Posts.Remove(postToDelete); // Si la imagen fue eliminada correctamente, eliminar el post de la base de datos
