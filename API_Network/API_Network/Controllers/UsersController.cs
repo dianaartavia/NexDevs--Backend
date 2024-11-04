@@ -160,10 +160,10 @@ namespace API_Network.Controllers
                 if (!string.IsNullOrEmpty(user.Password) && user.Password != userExist.Password) //se verifica si la contraseña ha sido cambiada
                 {
                     byte[] hashedPassword = HelperCryptography.EncriptarPassword(user.Password, userExist.Salt); //si la contraseña ha sido modificada, se encripta
-                    userExist   .Password = Convert.ToBase64String(hashedPassword);
+                    userExist.Password = Convert.ToBase64String(hashedPassword);
                 }
                 // Actualizar los demás campos del perfil con los datos recibidos de UserImage
-                userExist.FirstName = user.FirstName; 
+                userExist.FirstName = user.FirstName;
                 userExist.LastName = user.LastName;
                 userExist.Email = user.Email;
                 userExist.Province = user.Province;
@@ -190,6 +190,38 @@ namespace API_Network.Controllers
             try
             {
                 var data = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+                //se eliminan todos los likes relacionados al usuario
+                var likes = await _context.Likes.ToListAsync();
+                foreach (var like in likes)
+                {
+                    if (like.UserId == data.UserId)
+                    {
+                        _context.Likes.Remove(like);
+                        _context.SaveChanges();
+                    }
+                }
+                //se eliminan todos los comentarios relacionados al usuario
+                var comments = await _context.Comments.ToListAsync();
+                foreach (var comment in comments)
+                {
+                    if (comment.UserId == data.UserId)
+                    {
+                        _context.Comments.Remove(comment);
+                        _context.SaveChanges();
+                    }
+                }
+
+                //se eliminan todos las reviews relacionados al usuario
+                var reviews = await _context.Reviews.ToListAsync();
+                foreach (var review in reviews)
+                {
+                    if (review.UserId == data.UserId)
+                    {
+                        _context.Reviews.Remove(review);
+                        _context.SaveChanges();
+                    }
+                }
 
                 if (data != null)
                 {

@@ -33,9 +33,11 @@ namespace API_Network.Controllers
         }
         // //[Authorize]
         [HttpGet("Listado")]
-        public async Task<List<WorkProfileWithRating>> Listado()        {
+        public async Task<List<WorkProfileWithRating>> Listado()
+        {
             var list = await _context.WorkProfiles
-                .Select(w => new WorkProfileWithRating{
+                .Select(w => new WorkProfileWithRating
+                {
                     WorkId = w.WorkId,
                     Name = w.Name,
                     Email = w.Email,
@@ -168,7 +170,8 @@ namespace API_Network.Controllers
 
             if (workProfile == null)
             {
-                return NotFound();            }
+                return NotFound();
+            }
 
             return workProfile;
         }
@@ -235,8 +238,9 @@ namespace API_Network.Controllers
                 var data = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.Email == email);
                 if (data != null)
                 {
+                    //se eliminan todos los workSkills relacionados al usuario
                     var listWorkSkills = await _context.WorkSkills.ToListAsync();
-                    foreach (var ws in listWorkSkills) //se busca en la tabla workSkill todos los datos relacionados al workprofile y se eliminan
+                    foreach (var ws in listWorkSkills)
                     {
                         if (ws.WorkId == data.WorkId)
                         {
@@ -244,6 +248,59 @@ namespace API_Network.Controllers
                             _context.SaveChanges();
                         }
                     }
+
+                    //se eliminan todos los likes relacionados al usuario
+                    var likes = await _context.Likes.ToListAsync();
+                    foreach (var like in likes)
+                    {
+                        if (like.WorkProfileId == data.WorkId)
+                        {
+                            _context.Likes.Remove(like);
+                            _context.SaveChanges();
+                        }
+                    }
+                    //se eliminan todos los comentarios relacionados al usuario
+                    var comments = await _context.Comments.ToListAsync();
+                    foreach (var comment in comments)
+                    {
+                        if (comment.WorkId == data.WorkId)
+                        {
+                            _context.Comments.Remove(comment);
+                            _context.SaveChanges();
+                        }
+                    }
+
+                    //se eliminan todos las reviews relacionados al usuario
+                    var reviews = await _context.Reviews.ToListAsync();
+                    foreach (var review in reviews)
+                    {
+                        if (review.WorkId == data.WorkId)
+                        {
+                            _context.Reviews.Remove(review);
+                            _context.SaveChanges();
+                        }
+                    }
+                    //se eliminan todos los post relacionados al usuario
+                    var posts = await _context.Posts.ToListAsync();
+                    foreach (var post in posts)
+                    {
+                        if (post.WorkId == data.WorkId)
+                        {
+                            _context.Posts.Remove(post);
+                            _context.SaveChanges();
+                        }
+                    }
+                    //se eliminan todos las collection relacionados al usuario
+                    var collections = await _context.Collections.ToListAsync();
+                    foreach (var collection in collections)
+                    {
+                        if (collection.WorkId == data.WorkId)
+                        {
+                            _context.Collections.Remove(collection);
+                            _context.SaveChanges();
+                        }
+                    }
+
                     await _cloudinaryController.DeleteImage(data.ImagePublicId); //se elimina la imagen de cloudinary
                     _context.WorkProfiles.Remove(data);
                     _context.SaveChanges();
