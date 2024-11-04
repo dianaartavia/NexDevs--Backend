@@ -145,10 +145,32 @@ namespace API_Network.Controllers
 
         ////[Authorize]
         [HttpGet("BuscarID")]
-        public async Task<ActionResult<WorkProfile>> ConsultarID(int id)
+        public async Task<ActionResult<WorkProfileWithRating>> ConsultarID(int id)
         {
-            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == id);
-            return temp;
+            var workProfile = await _context.WorkProfiles
+                .Where(w => w.WorkId == id)
+                .Select(w => new WorkProfileWithRating
+                {
+                    WorkId = w.WorkId,
+                    Name = w.Name,
+                    Email = w.Email,
+                    Number = w.Number,
+                    Province = w.Province,
+                    City = w.City,
+                    WorkDescription = w.WorkDescription,
+                    ProfilePictureUrl = w.ProfilePictureUrl,
+                    ProfileType = w.ProfileType,
+                    AverageRating = _context.Reviews
+                        .Where(r => r.WorkId == w.WorkId)
+                        .Average(r => (double?)r.Rating) ?? 0
+                })
+                .FirstOrDefaultAsync();
+
+            if (workProfile == null)
+            {
+                return NotFound();            }
+
+            return workProfile;
         }
 
         //[Authorize]
