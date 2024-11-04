@@ -31,28 +31,33 @@ namespace API_Network.Controllers
             _config = config;
 
         }
+        // //[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkProfile>> Listado()
         {
             var list = await _context.WorkProfiles
-                .Select(w => new WorkProfile
-                {
-                    WorkId = w.WorkId,
-                    Name = w.Name,
-                    Email = w.Email,
-                    Number = w.Number,
-                    Province = w.Province,
-                    City = w.City,
-                    WorkDescription = w.WorkDescription,
-                    ProfilePictureUrl = w.ProfilePictureUrl,
-                    ProfileType = w.ProfileType,
-                    RatingAverage = _context.Reviews
-                        .Where(r => r.WorkId == w.WorkId)
-                        .Average(r => (double?)r.Rating) ?? 0
-                })
-                .ToListAsync();
-
-            return list;
+            .Select(w=> new WorkProfile{
+                WorkId = w.WorkId,
+                        Name = w.Name,
+                        Email = w.Email,
+                        Number = w.Number,
+                        Password = "ND",
+                        Province = w.Province,
+                        City = w.City,
+                        WorkDescription = w.WorkDescription,
+                        ProfilePictureUrl = w.ProfilePictureUrl,
+                        ProfileType = w.ProfileType,
+                        Salt = "ND"
+            })
+            .ToListAsync();
+            if (list == null)
+            {
+                return new List<WorkProfile>();
+            }
+            else
+            {
+                return list;
+            }
         }
 
         [HttpPost("CrearCuenta")]
@@ -138,34 +143,12 @@ namespace API_Network.Controllers
             return temp;
         }
 
+        ////[Authorize]
         [HttpGet("BuscarID")]
         public async Task<ActionResult<WorkProfile>> ConsultarID(int id)
         {
-            var workProfile = await _context.WorkProfiles
-                .Where(w => w.WorkId == id)
-                .Select(w => new WorkProfile
-                {
-                    WorkId = w.WorkId,
-                    Name = w.Name,
-                    Email = w.Email,
-                    Number = w.Number,
-                    Province = w.Province,
-                    City = w.City,
-                    WorkDescription = w.WorkDescription,
-                    ProfilePictureUrl = w.ProfilePictureUrl,
-                    ProfileType = w.ProfileType,
-                    RatingAverage = _context.Reviews
-                        .Where(r => r.WorkId == w.WorkId)
-                        .Average(r => (double?)r.Rating) ?? 0
-                })
-                .FirstOrDefaultAsync();
-
-            if (workProfile == null)
-            {
-                return NotFound();
-            }
-
-            return workProfile;
+            var temp = await _context.WorkProfiles.FirstOrDefaultAsync(wp => wp.WorkId == id);
+            return temp;
         }
 
         //[Authorize]
