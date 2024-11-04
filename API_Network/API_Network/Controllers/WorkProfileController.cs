@@ -329,6 +329,8 @@ namespace API_Network.Controllers
         }
         // ***   MÉTODO AUTENTICACION DE LOGIN    ***
 
+
+
         //Modificado para que sea por medio de un objeto y no con parametros escritos, asi mas facil y seguro de implementar en el front
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
@@ -359,5 +361,19 @@ namespace API_Network.Controllers
                 }
             }
         }
+        public class WorkProfileWithRating
+        {
+            public int WorkId { get; set; }
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Number { get; set; }
+            public string Province { get; set; }
+            public string City { get; set; }
+            public string WorkDescription { get; set; }
+            public string ProfilePictureUrl { get; set; }
+            public char ProfileType { get; set; }
+            public double AverageRating { get; set; }
+        }
+
     }
 }
