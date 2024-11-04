@@ -49,6 +49,7 @@ namespace API_Network.Controllers
             var reviews = await (from review in _context.Reviews
                                  join user in _context.Users on review.UserId equals user.UserId
                                  where review.WorkId == workId
+
                                  select new ReviewUserData
                                  {
                                      ReviewId = review.ReviewId,

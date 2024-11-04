@@ -17,5 +17,6 @@ namespace API_Network.Models
         public char ProfileType { get; set; }
         public string Salt { get; set; }
         public string ImagePublicId { get; set; }
+        public double? RatingAverage { get; set; }
     }
 }
