@@ -33,26 +33,26 @@ namespace API_Network.Controllers
         }
         // //[Authorize]
         [HttpGet("Listado")]
-        public async Task<List<WorkProfile>> Listado()
-        {
+        public async Task<List<WorkProfileWithRating>> Listado()        {
             var list = await _context.WorkProfiles
-            .Select(w=> new WorkProfile{
-                WorkId = w.WorkId,
-                        Name = w.Name,
-                        Email = w.Email,
-                        Number = w.Number,
-                        Password = "ND",
-                        Province = w.Province,
-                        City = w.City,
-                        WorkDescription = w.WorkDescription,
-                        ProfilePictureUrl = w.ProfilePictureUrl,
-                        ProfileType = w.ProfileType,
-                        Salt = "ND"
-            })
-            .ToListAsync();
+                .Select(w => new WorkProfileWithRating{
+                    WorkId = w.WorkId,
+                    Name = w.Name,
+                    Email = w.Email,
+                    Number = w.Number,
+                    Province = w.Province,
+                    City = w.City,
+                    WorkDescription = w.WorkDescription,
+                    ProfilePictureUrl = w.ProfilePictureUrl,
+                    ProfileType = w.ProfileType,
+                    AverageRating = _context.Reviews
+                        .Where(r => r.WorkId == w.WorkId)
+                        .Average(r => (double?)r.Rating) ?? 0
+                })
+                .ToListAsync();
             if (list == null)
             {
-                return new List<WorkProfile>();
+                return new List<WorkProfileWithRating>();
             }
             else
             {
