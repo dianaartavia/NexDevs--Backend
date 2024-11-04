@@ -118,6 +118,7 @@ namespace API_Network.Controllers
             try
             {
                 comment.LikesCount = 0;
+                comment.CreateAt = DateTime.UtcNow;
                 _context.Posts.Update(post);
                 _context.Comments.Add(comment);
                 _context.SaveChanges();
