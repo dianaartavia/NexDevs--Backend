@@ -31,8 +31,6 @@ namespace API_Network.Controllers
             _config = config;
 
         }
-
-        //[Authorize]
         [HttpGet("Listado")]
         public async Task<List<WorkProfile>> Listado()
         {
@@ -52,18 +50,11 @@ namespace API_Network.Controllers
                         .Where(r => r.WorkId == w.WorkId)
                         .Average(r => (double?)r.Rating) ?? 0
                 })
-            .ToListAsync();
-            if (list == null)
-            {
-                return new List<WorkProfile>();
-            }
-            else
-            {
-                return list;
-            }
+                .ToListAsync();
+
+            return list;
         }
 
-        //[Authorize]
         [HttpPost("CrearCuenta")]
         public async Task<IActionResult> CrearCuentaAsync(WorkProfileImage workProfile)
         {
@@ -139,7 +130,7 @@ namespace API_Network.Controllers
             }
         }
 
-        //[Authorize]
+        ////[Authorize]
         [HttpGet("BuscarEmail")]
         public async Task<WorkProfile> Consultar(string email)
         {
@@ -147,7 +138,6 @@ namespace API_Network.Controllers
             return temp;
         }
 
-        //[Authorize]
         [HttpGet("BuscarID")]
         public async Task<ActionResult<WorkProfile>> ConsultarID(int id)
         {
