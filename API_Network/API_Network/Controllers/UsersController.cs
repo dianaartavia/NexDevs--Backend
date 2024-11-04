@@ -284,7 +284,7 @@ namespace API_Network.Controllers
             User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             try
             {
-                EmailRestablecer emailRestablecer = new EmailRestablecer();
+                EmailRestablecer emailRestablecer = new EmailRestablecer(_config);
                 emailRestablecer.Enviar(email, token);
                 enviado = true;
                 return enviado;
